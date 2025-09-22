@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { migrationHelpers } from '@/lib/firestore';
 
 // Discord bot webhook endpoint for data synchronization
 export async function POST(request: NextRequest) {
   try {
+    // Only import Firebase helpers when actually needed
+    const { migrationHelpers } = await import('@/lib/firestore');
+    
     const authorization = request.headers.get('authorization');
     
     // Verify Discord bot token
