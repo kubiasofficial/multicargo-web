@@ -433,16 +433,17 @@ export const migrationHelpers = {
     try {
       // Migrate active rides
       for (const [userId, rideData] of aktivniJizdy) {
+        const data = rideData as any; // Type assertion for migration data
         const ride: Omit<Ride, 'id'> = {
-          trainNumber: rideData.trainNumber || '',
-          route: rideData.route || '',
+          trainNumber: (data.trainNumber as string) || '',
+          route: (data.route as string) || '',
           departure: {
-            station: rideData.departure?.station || '',
-            time: new Date(rideData.departure?.time || Date.now())
+            station: (data.departure?.station as string) || '',
+            time: new Date((data.departure?.time as string | number) || Date.now())
           },
           arrival: {
-            station: rideData.arrival?.station || '',
-            time: new Date(rideData.arrival?.time || Date.now())
+            station: (data.arrival?.station as string) || '',
+            time: new Date((data.arrival?.time as string | number) || Date.now())
           },
           status: 'IN_PROGRESS',
           assignedUserId: userId,
@@ -457,14 +458,15 @@ export const migrationHelpers = {
 
       // Migrate user stats
       for (const [userId, stats] of userStats) {
+        const data = stats as any; // Type assertion for migration data
         const userStatsData: UserStats = {
           userId,
-          points: stats.points || 0,
-          level: stats.level || 1,
-          streak: stats.streak || 0,
-          totalRides: stats.totalRides || 0,
-          completedRides: stats.completedRides || 0,
-          averageRating: stats.averageRating || 0,
+          points: (data.points as number) || 0,
+          level: (data.level as number) || 1,
+          streak: (data.streak as number) || 0,
+          totalRides: (data.totalRides as number) || 0,
+          completedRides: (data.completedRides as number) || 0,
+          averageRating: (data.averageRating as number) || 0,
           lastActivity: new Date()
         };
         
