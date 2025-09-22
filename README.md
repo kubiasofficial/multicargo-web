@@ -1,36 +1,166 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚂 MultiCargo Web
 
-## Getting Started
+Moderní webová aplikace pro správu železničních jízd s real-time sledováním a Discord integrací.
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/Next.js-15-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Firebase](https://img.shields.io/badge/Firebase-10-orange) ![Tailwind](https://img.shields.io/badge/Tailwind-3-cyan)
 
+## 🌟 Funkcionality
+
+- 🔐 **Discord OAuth přihlášení** s automatickou synchronizací rolí
+- 👥 **Role management** (Admin, Výpravčí, Strojvůdce, Zaměstnanec)
+- 📊 **Real-time dashboard** s pokročilými statistikami
+- 🚂 **Live tracking vlaků** s progress bary
+- 🔥 **Firebase Firestore** pro real-time data
+- 📱 **Responsive design** optimalizovaný pro všechna zařízení
+- ⚡ **Next.js 14** s TypeScript pro maximální výkon
+
+## 🛠️ Technologie
+
+- **Framework**: Next.js 14 + TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: Firebase Firestore
+- **Authentication**: NextAuth.js + Discord OAuth
+- **Icons**: Heroicons
+- **Deployment**: Vercel
+- **Real-time**: Firebase real-time listeners
+
+## 🚀 Quick Start
+
+### 1. Instalace závislostí
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment variables
+Vytvořte `.env.local` soubor:
+```env
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret
+DISCORD_CLIENT_ID=your-discord-client-id
+DISCORD_CLIENT_SECRET=your-discord-client-secret
+NEXT_PUBLIC_FIREBASE_API_KEY=your-firebase-api-key
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+# ... další Firebase config
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Spuštění dev serveru
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Aplikace bude dostupná na [http://localhost:3000](http://localhost:3000)
 
-## Learn More
+## 📁 Struktura projektu
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API endpoints
+│   ├── dashboard/         # Dashboard stránka
+│   ├── admin/            # Admin panel
+│   └── globals.css       # Globální styly
+├── components/           # React komponenty
+│   ├── Navbar.tsx        # Hlavní navigace
+│   ├── Dashboard.tsx     # Dashboard komponenta
+│   └── LiveTracking.tsx  # Live tracking vlaků
+├── lib/                  # Utility knihovny
+│   ├── firebase.ts       # Firebase konfigurace
+│   ├── firestore.ts      # Databázové operace
+│   ├── auth.ts          # Auth helper funkce
+│   └── discord-integration.ts # Discord bot integrace
+└── types/               # TypeScript definice
+    └── index.ts         # Hlavní typy
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎯 Klíčové komponenty
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Dashboard
+- Real-time statistiky uživatelů
+- Přehled aktivních jízd
+- Live tracking s progress bary
+- Historie dokončených jízd
 
-## Deploy on Vercel
+### Admin Panel
+- Správa uživatelů a rolí
+- Management jízd vlaků
+- Systémové statistiky
+- Přístup pouze pro administrátory
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Live Tracking
+- Real-time pozice vlaků
+- Automatické aktualizace každých 30 sekund
+- Progress indikátory cesty
+- Upozornění na zpoždění
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔧 Discord Bot Integrace
+
+Aplikace je připravena pro synchronizaci s Discord botem:
+
+```javascript
+// Synchronizace dat z Discord botu
+await webAppIntegration.syncDataToWebApp(
+  aktivniJizdy,
+  dokonceneJizdy, 
+  userStats
+);
+```
+
+### Podporované Discord role:
+- **Admin** - Plný přístup ke všem funkcím
+- **Výpravčí** - Správa jízd a přiřazování
+- **Strojvůdce** - Přebírání a sledování jízd
+- **Zaměstnanec** - Základní přístup k jízdám
+
+## 📊 Databázová struktura
+
+### Firestore kolekce:
+- **users** - Informace o uživatelích a jejich rolích
+- **rides** - Jízdy vlaků s kompletními detaily
+- **assignments** - Přiřazení jízd strojvůdcům
+- **userStats** - Statistiky a body uživatelů
+- **liveTracking** - Real-time pozice a postup vlaků
+
+## 🌍 Deployment
+
+### Vercel (doporučeno)
+```bash
+# Push na GitHub
+git push origin main
+
+# Deploy na Vercel se automaticky spustí
+```
+
+### Environment variables pro produkci:
+- Nastavte všechny env vars ve Vercel dashboard
+- Aktualizujte `NEXTAUTH_URL` na produkční URL
+- Přidejte produkční URL do Discord OAuth redirect URLs
+
+## 📈 Monitoring & Analytics
+
+- Firebase Analytics pro sledování používání
+- Real-time error monitoring
+- Performance metrics
+- User behavior tracking
+
+## 🔒 Bezpečnost
+
+- Discord OAuth s ověřenými redirect URLs
+- Firebase Security Rules pro kontrolu přístupu
+- TypeScript pro type safety
+- Environment variables pro citlivé údaje
+
+## 🤝 Přispívání
+
+1. Fork repositáře
+2. Vytvořte feature branch (`git checkout -b feature/nova-funkcionalita`)
+3. Commit změny (`git commit -m 'Přidání nové funkcionality'`)
+4. Push branch (`git push origin feature/nova-funkcionalita`)
+5. Otevřete Pull Request
+
+## 📄 Licence
+
+MIT License - viz [LICENSE](LICENSE) soubor
+
+---
+
+Vytvořeno s ❤️ pro MultiCargo tým 🚂
