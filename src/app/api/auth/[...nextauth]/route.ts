@@ -23,9 +23,47 @@ const handler = NextAuth({
         token.discriminator = discordProfile.discriminator as string;
         token.avatar = discordProfile.avatar as string;
         
-        // Temporarily skip role fetching to test basic auth
-        console.log('Basic Discord auth successful for user:', discordProfile.username);
-        token.roles = ['EMPLOYEE']; // Default role for now
+        // Use existing bot to fetch roles
+        try {
+          console.log('Fetching roles for user:', discordProfile.id);
+          
+          const guildMemberResponse = await fetch(
+            `https://discord.com/api/v10/guilds/${process.env.DISCORD_GUILD_ID}/members/${discordProfile.id}`,
+            {
+              headers: {
+                Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`
+              }
+            }
+          );
+          
+          if (guildMemberResponse.ok) {
+            const guildMember = await guildMemberResponse.json();
+            const userRoles: UserRole[] = [];
+            
+            // Check for specific roles
+            if (guildMember.roles.includes(process.env.DISCORD_ADMIN_ROLE_ID)) {
+              userRoles.push('ADMIN');
+            }
+            if (guildMember.roles.includes(process.env.DISCORD_EMPLOYEE_ROLE_ID)) {
+              userRoles.push('EMPLOYEE');
+            }
+            if (guildMember.roles.includes(process.env.DISCORD_STROJVUDCE_ROLE_ID)) {
+              userRoles.push('STROJVUDCE');
+            }
+            if (guildMember.roles.includes(process.env.DISCORD_VYPRAVCI_ROLE_ID)) {
+              userRoles.push('VYPRAVCI');
+            }
+            
+            // If no specific roles, give default EMPLOYEE
+            token.roles = userRoles.length > 0 ? userRoles : ['EMPLOYEE'];
+          } else {
+            console.log('User not found in guild, assigning EMPLOYEE role');
+            token.roles = ['EMPLOYEE'];
+          }
+        } catch (error) {
+          console.error('Error fetching Discord roles:', error);
+          token.roles = ['EMPLOYEE'];
+        }
       }
       
       return token;
