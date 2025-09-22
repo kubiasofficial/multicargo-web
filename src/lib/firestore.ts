@@ -14,7 +14,7 @@ import {
   Timestamp,
   QueryConstraint
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { getFirebaseDb } from './firebase';
 import { 
   User, 
   Ride, 
@@ -55,13 +55,13 @@ export const userOperations = {
       lastLogin: toFirestoreTimestamp(user.lastLogin)
     };
     
-    const docRef = await addDoc(collection(db, COLLECTIONS.USERS), firestoreUser);
+    const docRef = await addDoc(collection(getFirebaseDb(), COLLECTIONS.USERS), firestoreUser);
     return docRef.id;
   },
 
   // Get user by ID
   async getById(id: string): Promise<User | null> {
-    const docRef = doc(db, COLLECTIONS.USERS, id);
+    const docRef = doc(getFirebaseDb(), COLLECTIONS.USERS, id);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
@@ -80,7 +80,7 @@ export const userOperations = {
   // Get user by Discord ID
   async getByDiscordId(discordId: string): Promise<User | null> {
     const q = query(
-      collection(db, COLLECTIONS.USERS),
+      collection(getFirebaseDb(), COLLECTIONS.USERS),
       where('discordId', '==', discordId),
       limit(1)
     );
@@ -103,7 +103,7 @@ export const userOperations = {
 
   // Update user
   async update(id: string, updates: Partial<User>): Promise<void> {
-    const docRef = doc(db, COLLECTIONS.USERS, id);
+    const docRef = doc(getFirebaseDb(), COLLECTIONS.USERS, id);
     const firestoreUpdates: Record<string, unknown> = { ...updates };
     
     // Convert dates to Firestore timestamps
@@ -119,7 +119,7 @@ export const userOperations = {
 
   // Get all users
   async getAll(): Promise<User[]> {
-    const querySnapshot = await getDocs(collection(db, COLLECTIONS.USERS));
+    const querySnapshot = await getDocs(collection(getFirebaseDb(), COLLECTIONS.USERS));
     
     return querySnapshot.docs.map(doc => {
       const data = doc.data() as FirestoreUser;
@@ -151,13 +151,13 @@ export const rideOperations = {
       updatedAt: toFirestoreTimestamp(ride.updatedAt)
     };
     
-    const docRef = await addDoc(collection(db, COLLECTIONS.RIDES), firestoreRide);
+    const docRef = await addDoc(collection(getFirebaseDb(), COLLECTIONS.RIDES), firestoreRide);
     return docRef.id;
   },
 
   // Get ride by ID
   async getById(id: string): Promise<Ride | null> {
-    const docRef = doc(db, COLLECTIONS.RIDES, id);
+    const docRef = doc(getFirebaseDb(), COLLECTIONS.RIDES, id);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
@@ -184,7 +184,7 @@ export const rideOperations = {
   // Get rides by status
   async getByStatus(status: string): Promise<Ride[]> {
     const q = query(
-      collection(db, COLLECTIONS.RIDES),
+      collection(getFirebaseDb(), COLLECTIONS.RIDES),
       where('status', '==', status),
       orderBy('createdAt', 'desc')
     );
@@ -213,7 +213,7 @@ export const rideOperations = {
   // Get rides by user
   async getByUserId(userId: string): Promise<Ride[]> {
     const q = query(
-      collection(db, COLLECTIONS.RIDES),
+      collection(getFirebaseDb(), COLLECTIONS.RIDES),
       where('assignedUserId', '==', userId),
       orderBy('createdAt', 'desc')
     );
@@ -241,7 +241,7 @@ export const rideOperations = {
 
   // Update ride
   async update(id: string, updates: Partial<Ride>): Promise<void> {
-    const docRef = doc(db, COLLECTIONS.RIDES, id);
+    const docRef = doc(getFirebaseDb(), COLLECTIONS.RIDES, id);
     const firestoreUpdates: Record<string, unknown> = { ...updates };
     
     // Convert dates to Firestore timestamps
@@ -269,7 +269,7 @@ export const rideOperations = {
 
   // Delete ride
   async delete(id: string): Promise<void> {
-    const docRef = doc(db, COLLECTIONS.RIDES, id);
+    const docRef = doc(getFirebaseDb(), COLLECTIONS.RIDES, id);
     await deleteDoc(docRef);
   }
 };
@@ -278,7 +278,7 @@ export const rideOperations = {
 export const liveTrackingOperations = {
   // Update live tracking data
   async update(rideId: string, data: Omit<LiveTrackingData, 'rideId'>): Promise<void> {
-    const docRef = doc(db, COLLECTIONS.LIVE_TRACKING, rideId);
+    const docRef = doc(getFirebaseDb(), COLLECTIONS.LIVE_TRACKING, rideId);
     const firestoreData: Omit<FirestoreLiveTracking, 'rideId'> = {
       ...data,
       estimatedArrival: data.estimatedArrival ? toFirestoreTimestamp(data.estimatedArrival) : undefined,
@@ -291,7 +291,7 @@ export const liveTrackingOperations = {
 
   // Get live tracking data
   async getByRideId(rideId: string): Promise<LiveTrackingData | null> {
-    const docRef = doc(db, COLLECTIONS.LIVE_TRACKING, rideId);
+    const docRef = doc(getFirebaseDb(), COLLECTIONS.LIVE_TRACKING, rideId);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
@@ -313,7 +313,7 @@ export const liveTrackingOperations = {
 export const userStatsOperations = {
   // Get user stats
   async getByUserId(userId: string): Promise<UserStats | null> {
-    const docRef = doc(db, COLLECTIONS.USER_STATS, userId);
+    const docRef = doc(getFirebaseDb(), COLLECTIONS.USER_STATS, userId);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
@@ -329,7 +329,7 @@ export const userStatsOperations = {
 
   // Update user stats
   async update(userId: string, stats: Partial<UserStats>): Promise<void> {
-    const docRef = doc(db, COLLECTIONS.USER_STATS, userId);
+    const docRef = doc(getFirebaseDb(), COLLECTIONS.USER_STATS, userId);
     const firestoreStats: Record<string, unknown> = { ...stats };
     
     if (stats.lastActivity) {
@@ -341,7 +341,7 @@ export const userStatsOperations = {
 
   // Create initial user stats
   async create(stats: UserStats): Promise<void> {
-    const docRef = doc(db, COLLECTIONS.USER_STATS, stats.userId);
+    const docRef = doc(getFirebaseDb(), COLLECTIONS.USER_STATS, stats.userId);
     const firestoreStats = {
       ...stats,
       lastActivity: toFirestoreTimestamp(stats.lastActivity)
@@ -356,7 +356,7 @@ export const realtimeListeners = {
   // Listen to active rides
   onActiveRidesChange(callback: (rides: Ride[]) => void): () => void {
     const q = query(
-      collection(db, COLLECTIONS.RIDES),
+      collection(getFirebaseDb(), COLLECTIONS.RIDES),
       where('status', 'in', ['ASSIGNED', 'IN_PROGRESS']),
       orderBy('createdAt', 'desc')
     );
@@ -387,7 +387,7 @@ export const realtimeListeners = {
   // Listen to live tracking updates
   onLiveTrackingChange(callback: (data: LiveTrackingData[]) => void): () => void {
     const q = query(
-      collection(db, COLLECTIONS.LIVE_TRACKING),
+      collection(getFirebaseDb(), COLLECTIONS.LIVE_TRACKING),
       orderBy('lastUpdate', 'desc')
     );
     
@@ -409,7 +409,7 @@ export const realtimeListeners = {
 
   // Listen to user stats changes
   onUserStatsChange(userId: string, callback: (stats: UserStats | null) => void): () => void {
-    const docRef = doc(db, COLLECTIONS.USER_STATS, userId);
+    const docRef = doc(getFirebaseDb(), COLLECTIONS.USER_STATS, userId);
     
     return onSnapshot(docRef, (doc) => {
       if (doc.exists()) {
