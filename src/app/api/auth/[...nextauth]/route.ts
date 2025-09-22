@@ -3,6 +3,7 @@ import DiscordProvider from 'next-auth/providers/discord';
 import { UserRole } from '@/types';
 
 const handler = NextAuth({
+  debug: true, // Enable debug mode
   providers: [
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID!,
@@ -84,6 +85,17 @@ const handler = NextAuth({
   },
   session: {
     strategy: 'jwt'
+  },
+  logger: {
+    error(code, metadata) {
+      console.error('NextAuth Error:', code, metadata);
+    },
+    warn(code) {
+      console.warn('NextAuth Warning:', code);
+    },
+    debug(code, metadata) {
+      console.log('NextAuth Debug:', code, metadata);
+    }
   }
 });
 
