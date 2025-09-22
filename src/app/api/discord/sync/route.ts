@@ -20,9 +20,9 @@ export async function POST(request: NextRequest) {
         const { aktivniJizdy, dokonceneJizdy, userStats } = data;
         
         // Convert Maps from JSON
-        const aktivniJizdyMap = new Map(Object.entries(aktivniJizdy || {}));
-        const dokonceneJizdyMap = new Map(Object.entries(dokonceneJizdy || {}).map(([key, value]) => [key, Array.isArray(value) ? value : []]));
-        const userStatsMap = new Map(Object.entries(userStats || {}));
+        const aktivniJizdyMap = new Map(Object.entries(aktivniJizdy || {}).map(([key, value]) => [key, value as Record<string, unknown>]));
+        const dokonceneJizdyMap = new Map(Object.entries(dokonceneJizdy || {}).map(([key, value]) => [key, Array.isArray(value) ? value as Record<string, unknown>[] : []]));
+        const userStatsMap = new Map(Object.entries(userStats || {}).map(([key, value]) => [key, value as Record<string, unknown>]));
         
         await migrationHelpers.migrateDiscordBotData(
           aktivniJizdyMap,
