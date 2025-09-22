@@ -25,6 +25,10 @@ const handler = NextAuth({
         
         // Fetch user roles from Discord Guild
         try {
+          console.log('Fetching guild member for user:', discordProfile.id);
+          console.log('Guild ID:', process.env.DISCORD_GUILD_ID);
+          console.log('Bot token exists:', !!process.env.DISCORD_BOT_TOKEN);
+          
           const guildMemberResponse = await fetch(
             `https://discord.com/api/v10/guilds/${process.env.DISCORD_GUILD_ID}/members/${discordProfile.id}`,
             {
@@ -34,8 +38,12 @@ const handler = NextAuth({
             }
           );
           
+          console.log('Guild member response status:', guildMemberResponse.status);
+          
           if (guildMemberResponse.ok) {
             const guildMember = await guildMemberResponse.json();
+            console.log('Guild member roles:', guildMember.roles);
+            
             const userRoles: UserRole[] = [];
             
             // Check for specific roles
@@ -53,12 +61,14 @@ const handler = NextAuth({
             }
             
             token.roles = userRoles;
+            console.log('Assigned roles:', userRoles);
           } else {
-            token.roles = [];
+            console.log('Failed to fetch guild member, response:', await guildMemberResponse.text());
+            token.roles = ['EMPLOYEE']; // Default role if can't fetch from Discord
           }
         } catch (error) {
           console.error('Error fetching Discord guild member:', error);
-          token.roles = [];
+          token.roles = ['EMPLOYEE']; // Default role if error occurs
         }
       }
       
