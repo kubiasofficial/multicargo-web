@@ -41,8 +41,8 @@ const toFirestoreTimestamp = (date: Date): Timestamp => {
   return Timestamp.fromDate(date);
 };
 
-const fromFirestoreTimestamp = (timestamp: any): Date => {
-  return timestamp.toDate();
+const fromFirestoreTimestamp = (timestamp: unknown): Date => {
+  return (timestamp as { toDate: () => Date }).toDate();
 };
 
 // User operations
@@ -104,7 +104,7 @@ export const userOperations = {
   // Update user
   async update(id: string, updates: Partial<User>): Promise<void> {
     const docRef = doc(db, COLLECTIONS.USERS, id);
-    const firestoreUpdates: any = { ...updates };
+    const firestoreUpdates: Record<string, unknown> = { ...updates };
     
     // Convert dates to Firestore timestamps
     if (updates.createdAt) {
@@ -242,7 +242,7 @@ export const rideOperations = {
   // Update ride
   async update(id: string, updates: Partial<Ride>): Promise<void> {
     const docRef = doc(db, COLLECTIONS.RIDES, id);
-    const firestoreUpdates: any = { ...updates };
+    const firestoreUpdates: Record<string, unknown> = { ...updates };
     
     // Convert dates to Firestore timestamps
     if (updates.departure) {
@@ -330,7 +330,7 @@ export const userStatsOperations = {
   // Update user stats
   async update(userId: string, stats: Partial<UserStats>): Promise<void> {
     const docRef = doc(db, COLLECTIONS.USER_STATS, userId);
-    const firestoreStats: any = { ...stats };
+    const firestoreStats: Record<string, unknown> = { ...stats };
     
     if (stats.lastActivity) {
       firestoreStats.lastActivity = toFirestoreTimestamp(stats.lastActivity);
@@ -429,7 +429,7 @@ export const realtimeListeners = {
 // Migration helpers for Discord bot data
 export const migrationHelpers = {
   // Migrate Discord bot data to Firestore
-  async migrateDiscordBotData(aktivniJizdy: Map<string, any>, dokonceneJizdy: Map<string, any[]>, userStats: Map<string, any>): Promise<void> {
+  async migrateDiscordBotData(aktivniJizdy: Map<string, Record<string, unknown>>, dokonceneJizdy: Map<string, Record<string, unknown>[]>, userStats: Map<string, Record<string, unknown>>): Promise<void> {
     try {
       // Migrate active rides
       for (const [userId, rideData] of aktivniJizdy) {

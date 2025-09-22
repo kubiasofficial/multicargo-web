@@ -17,7 +17,7 @@ const handler = NextAuth({
   callbacks: {
     async jwt({ token, account, profile }) {
       if (account && profile) {
-        const discordProfile = profile as any;
+        const discordProfile = profile as Record<string, unknown>;
         token.discordId = discordProfile.id as string;
         token.username = discordProfile.username as string;
         token.discriminator = discordProfile.discriminator as string;
