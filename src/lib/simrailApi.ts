@@ -160,25 +160,16 @@ export async function fetchTrainPositions(): Promise<any[]> {
  */
 export async function fetchTrainTimetable(trainNumber: string): Promise<SimRailTimetableEntry[]> {
   try {
-    const response = await fetch(`${SIMRAIL_API_URL}/api/getAllTimetables?serverCode=${SERVER_CODE}&train=${trainNumber}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
+    // First, get the train data which includes timetable
+    const trains = await fetchAvailableTrains();
+    const train = trains.find(t => t.trainNumber === trainNumber);
     
-    return data.map((entry: any): SimRailTimetableEntry => ({
-      stationName: entry.stationName,
-      stationCategory: entry.stationCategory,
-      arrivalTime: entry.arrivalTime,
-      departureTime: entry.departureTime,
-      platform: entry.platform,
-      track: entry.track,
-      maxSpeed: entry.maxSpeed,
-      radioChanels: entry.radioChanels,
-      supervisedBy: entry.supervisedBy,
-      mileage: entry.mileage,
-      stopType: entry.stopType
-    }));
+    if (!train || !train.timetable) {
+      console.log('No timetable found for train:', trainNumber);
+      return [];
+    }
+
+    return train.timetable;
   } catch (error) {
     console.error('Error fetching timetable:', error);
     return [];
@@ -214,8 +205,22 @@ export async function fetchStations(): Promise<SimRailStation[]> {
  */
 export async function getTrainPosition(trainNumber: string): Promise<any | null> {
   try {
-    const positions = await fetchTrainPositions();
-    return positions.find(pos => pos.trainNumber === trainNumber) || null;
+    const trains = await fetchAvailableTrains();
+    const train = trains.find(t => t.trainNumber === trainNumber);
+    
+    if (!train) {
+      return null;
+    }
+
+    return {
+      trainNumber: train.trainNumber,
+      currentStation: train.currentStation,
+      nextStation: train.nextStation,
+      speed: train.speed || 0,
+      lat: train.lat,
+      lng: train.lng,
+      progress: 50 // TODO: Calculate actual progress based on timetable
+    };
   } catch (error) {
     console.error('Error getting train position:', error);
     return null;

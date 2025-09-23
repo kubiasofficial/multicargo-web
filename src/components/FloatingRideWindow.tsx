@@ -262,12 +262,12 @@ export default function FloatingRideWindow({
             {showTimetable && (
               <div className="bg-gray-700 rounded-lg border border-gray-600 max-h-64 overflow-y-auto">
                 <div className="p-3 border-b border-gray-600">
-                  <h4 className="text-white font-medium">Jízdní řád</h4>
+                  <h4 className="text-white font-medium">Jízdní řád - {activeRide.trainNumber}</h4>
                 </div>
                 {loadingTimetable ? (
                   <div className="flex items-center justify-center p-6">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-400"></div>
-                    <span className="ml-2 text-gray-300">Načítám...</span>
+                    <span className="ml-2 text-gray-300">Načítám jízdní řád...</span>
                   </div>
                 ) : timetable.length > 0 ? (
                   <div className="p-3 space-y-2">
@@ -294,19 +294,25 @@ export default function FloatingRideWindow({
                                   ? 'bg-green-400' 
                                   : 'bg-gray-400'
                             }`} />
-                            <span className={`text-sm ${
-                              isCurrent ? 'text-blue-200 font-medium' : 'text-gray-300'
-                            }`}>
-                              {entry.stationName}
-                            </span>
+                            <div>
+                              <span className={`text-sm ${
+                                isCurrent ? 'text-blue-200 font-medium' : 'text-gray-300'
+                              }`}>
+                                {entry.stationName}
+                              </span>
+                              {entry.platform && (
+                                <span className="text-xs text-gray-500 ml-2">
+                                  Nástupiště {entry.platform}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="text-xs text-gray-400">
                             {entry.arrivalTime && (
-                              <span>{new Date(entry.arrivalTime).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}</span>
+                              <div>Příjezd: {entry.arrivalTime}</div>
                             )}
-                            {entry.departureTime && entry.arrivalTime && <span> - </span>}
                             {entry.departureTime && (
-                              <span>{new Date(entry.departureTime).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}</span>
+                              <div>Odjezd: {entry.departureTime}</div>
                             )}
                           </div>
                         </div>
@@ -316,7 +322,10 @@ export default function FloatingRideWindow({
                 ) : (
                   <div className="p-6 text-center">
                     <ExclamationTriangleIcon className="h-8 w-8 text-gray-500 mx-auto mb-2" />
-                    <p className="text-gray-400 text-sm">Jízdní řád není dostupný</p>
+                    <p className="text-gray-400 text-sm mb-2">Jízdní řád není dostupný</p>
+                    <p className="text-gray-500 text-xs">
+                      Zobrazuji pouze základní informace o trase: {activeRide.route}
+                    </p>
                   </div>
                 )}
               </div>

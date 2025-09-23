@@ -5,6 +5,7 @@ import { ActiveRide, SimRailTrain } from '@/types';
 import { useAuth } from './AuthContext';
 import { sendRideStartNotification } from '@/lib/discord';
 import { getTrainImage } from '@/lib/trainImages';
+import { getTrainPosition, calculateTrainDelay } from '@/lib/simrailApi';
 
 interface ActiveRideContextType {
   activeRide: ActiveRide | null;
@@ -54,6 +55,40 @@ export function ActiveRideProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('activeRide');
     }
   }, [activeRide]);
+
+  // Real-time updates for active ride
+  useEffect(() => {
+    if (!activeRide || activeRide.status !== 'ACTIVE') {
+      return;
+    }
+
+    const updateRealTimeData = async () => {
+      try {
+        const position = await getTrainPosition(activeRide.trainNumber);
+        const delay = await calculateTrainDelay(activeRide.trainNumber);
+        
+        if (position) {
+          setActiveRide(prev => prev ? {
+            ...prev,
+            currentStation: position.currentStation || prev.currentStation,
+            nextStation: position.nextStation || prev.nextStation,
+            delay: delay,
+            progress: position.progress || prev.progress
+          } : null);
+        }
+      } catch (error) {
+        console.error('Error updating real-time data:', error);
+      }
+    };
+
+    // Initial update
+    updateRealTimeData();
+
+    // Set up interval for updates every 30 seconds
+    const interval = setInterval(updateRealTimeData, 30000);
+
+    return () => clearInterval(interval);
+  }, [activeRide?.trainNumber, activeRide?.status]);
 
   const startRide = async (train: SimRailTrain): Promise<void> => {
     if (!user) {
