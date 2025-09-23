@@ -161,16 +161,16 @@ export async function fetchTrainPositions(): Promise<any[]> {
  */
 export async function fetchTrainTimetable(trainNumber: string): Promise<SimRailTimetableEntry[]> {
   try {
-    // First, get the train data which includes timetable
-    const trains = await fetchAvailableTrains();
-    const train = trains.find(t => t.trainNumber === trainNumber);
-    
-    if (!train || !train.timetable) {
-      console.log('No timetable found for train:', trainNumber);
-      return [];
+    // Use our new proxy endpoint for timetables
+    const response = await fetch(`/api/simrail/timetable/${trainNumber}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-
-    return train.timetable;
+    const timetableData = await response.json();
+    
+    console.log('Timetable data for train', trainNumber, ':', timetableData);
+    
+    return timetableData;
   } catch (error) {
     console.error('Error fetching timetable:', error);
     return [];
