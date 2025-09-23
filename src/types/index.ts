@@ -74,9 +74,17 @@ export interface SimRailTimetableEntry {
 export interface SimRailStation {
   id: string;
   name: string;
-  lat: number;
-  lng: number;
-  mainImageUrl?: string;
+  prefix: string;
+  latitude: number;
+  longitude: number;
+  difficultyLevel: number;
+  mainImageURL?: string;
+  additionalImage1URL?: string;
+  additionalImage2URL?: string;
+  dispatchedBy: Array<{
+    ServerCode: string;
+    SteamId: string;
+  }>;
 }
 
 export interface ActiveRide {

@@ -43,6 +43,54 @@ export default function FloatingRideWindow({
   });
   const [loadingTimetable, setLoadingTimetable] = useState(false);
 
+  // Function to find current and next station from timetable based on current time
+  const getStationsFromTimetable = () => {
+    if (timetable.length === 0) {
+      return { 
+        currentStationName: realTimeData.currentStation || 'Načítání...', 
+        nextStationName: realTimeData.nextStation || 'Načítání...' 
+      };
+    }
+
+    const now = new Date();
+    const currentTimeStr = now.toTimeString().slice(0, 8); // HH:mm:ss format
+    
+    // Find the current station based on departure/arrival times
+    let currentIndex = -1;
+    
+    for (let i = 0; i < timetable.length; i++) {
+      const entry = timetable[i];
+      const departureTime = entry.departureTime?.slice(11, 19); // Extract time from datetime
+      const arrivalTime = entry.arrivalTime?.slice(11, 19);
+      
+      // If we have departure time and haven't departed yet, or we're between arrival and departure
+      if (departureTime && currentTimeStr < departureTime) {
+        currentIndex = Math.max(0, i - 1); // Previous station or first station
+        break;
+      }
+      
+      // If we're past the last station's departure time
+      if (i === timetable.length - 1) {
+        currentIndex = i;
+      }
+    }
+    
+    // Fallback: use middle of route as approximation
+    if (currentIndex === -1) {
+      currentIndex = Math.floor(timetable.length / 3); // Assume we're about 1/3 through the route
+    }
+    
+    const currentStation = timetable[currentIndex];
+    const nextStation = timetable[currentIndex + 1];
+    
+    return {
+      currentStationName: currentStation?.stationName || activeRide.startStation,
+      nextStationName: nextStation?.stationName || activeRide.endStation
+    };
+  };
+
+  const { currentStationName, nextStationName } = getStationsFromTimetable();
+
   // Update current time every second
   useEffect(() => {
     const timer = setInterval(() => {
@@ -82,6 +130,22 @@ export default function FloatingRideWindow({
 
     return () => clearInterval(interval);
   }, [activeRide.trainNumber]);
+
+  // Auto-load timetable on component mount for station names
+  useEffect(() => {
+    const loadTimetable = async () => {
+      if (timetable.length === 0) {
+        try {
+          const timetableData = await fetchTrainTimetable(activeRide.trainNumber);
+          setTimetable(timetableData);
+        } catch (error) {
+          console.error('Error fetching timetable:', error);
+        }
+      }
+    };
+
+    loadTimetable();
+  }, [activeRide.trainNumber, timetable.length]);
 
   const handleShowTimetable = async () => {
     if (!showTimetable && timetable.length === 0) {
@@ -125,7 +189,7 @@ export default function FloatingRideWindow({
 
   const getCurrentStationInTimetable = () => {
     return timetable.findIndex(entry => 
-      entry.stationName === realTimeData.currentStation
+      entry.stationName === currentStationName
     );
   };
 
@@ -192,7 +256,7 @@ export default function FloatingRideWindow({
                   <span className="text-sm">Aktuální pozice</span>
                 </div>
                 <p className="text-white font-medium text-sm">
-                  {activeRide.currentStation || realTimeData.currentStation || 'Pozice neznámá'}
+                  {currentStationName}
                 </p>
               </div>
 
@@ -202,7 +266,7 @@ export default function FloatingRideWindow({
                   <span className="text-sm">Další stanice</span>
                 </div>
                 <p className="text-white font-medium text-sm">
-                  {activeRide.nextStation || realTimeData.nextStation || 'Další stanice neznámá'}
+                  {nextStationName}
                 </p>
               </div>
 
@@ -272,7 +336,7 @@ export default function FloatingRideWindow({
                 ) : timetable.length > 0 ? (
                   <div className="p-3 space-y-2">
                     {timetable.map((entry, index) => {
-                      const isCurrent = entry.stationName === realTimeData.currentStation;
+                      const isCurrent = entry.stationName === currentStationName;
                       const isPassed = index < getCurrentStationInTimetable();
                       
                       return (
@@ -356,7 +420,7 @@ export default function FloatingRideWindow({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white font-medium">{activeRide.trainNumber}</p>
-                <p className="text-gray-400 text-sm">{activeRide.currentStation || realTimeData.currentStation || 'Pozice neznámá'}</p>
+                <p className="text-gray-400 text-sm">{currentStationName}</p>
               </div>
               <div className="text-right">
                 <p className="text-white text-sm">{getJourneyDuration()}</p>

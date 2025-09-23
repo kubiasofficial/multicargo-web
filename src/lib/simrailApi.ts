@@ -178,27 +178,117 @@ export async function fetchTrainTimetable(trainNumber: string): Promise<SimRailT
 }
 
 /**
- * Fetch all stations
+ * Fetch all stations via our proxy endpoint
  */
 export async function fetchStations(): Promise<SimRailStation[]> {
   try {
-    const response = await fetch(`${SIMRAIL_BASE_URL}/stations-open?serverCode=${SERVER_CODE}`);
+    const response = await fetch(`/api/simrail/stations?serverCode=${SERVER_CODE}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data = await response.json();
+    const result = await response.json();
     
-    return data.map((station: any): SimRailStation => ({
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to fetch stations');
+    }
+    
+    return result.data.map((station: any): SimRailStation => ({
       id: station.id,
       name: station.name,
-      lat: station.lat,
-      lng: station.lng,
-      mainImageUrl: station.mainImageUrl
+      prefix: station.prefix,
+      latitude: station.latitude,
+      longitude: station.longitude,
+      difficultyLevel: station.difficultyLevel,
+      mainImageURL: station.mainImageURL,
+      additionalImage1URL: station.additionalImage1URL,
+      additionalImage2URL: station.additionalImage2URL,
+      dispatchedBy: station.dispatchedBy
     }));
   } catch (error) {
     console.error('Error fetching stations:', error);
     return [];
   }
+}
+
+// Cache for stations to avoid repeated API calls
+let stationsCache: SimRailStation[] | null = null;
+let stationsCacheTimestamp = 0;
+const STATIONS_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Get cached stations or fetch new ones
+ */
+async function getCachedStations(): Promise<SimRailStation[]> {
+  const now = Date.now();
+  
+  if (stationsCache && (now - stationsCacheTimestamp) < STATIONS_CACHE_DURATION) {
+    return stationsCache;
+  }
+  
+  stationsCache = await fetchStations();
+  stationsCacheTimestamp = now;
+  return stationsCache;
+}
+
+/**
+ * Find station name by GPS coordinates
+ * Uses distance calculation to find the closest station
+ */
+export async function findStationByCoordinates(lat: number, lng: number, maxDistance = 5000): Promise<string | null> {
+  try {
+    const stations = await getCachedStations();
+    
+    if (stations.length === 0) {
+      console.warn('No stations available for coordinate lookup');
+      return null;
+    }
+    
+    let closestStation: SimRailStation | null = null;
+    let minDistance = Infinity;
+    
+    for (const station of stations) {
+      const distance = calculateDistance(lat, lng, station.latitude, station.longitude);
+      if (distance < minDistance && distance <= maxDistance) {
+        minDistance = distance;
+        closestStation = station;
+      }
+    }
+    
+    if (closestStation) {
+      console.log(`🎯 Found station "${closestStation.name}" at distance ${Math.round(minDistance)}m from coordinates [${lat}, ${lng}]`);
+      return closestStation.name;
+    }
+    
+    console.warn(`❌ No station found within ${maxDistance}m of coordinates [${lat}, ${lng}]`);
+    return null;
+  } catch (error) {
+    console.error('Error finding station by coordinates:', error);
+    return null;
+  }
+}
+
+/**
+ * Calculate distance between two GPS coordinates in meters
+ * Uses Haversine formula
+ */
+function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371000; // Earth's radius in meters
+  const dLat = toRadians(lat2 - lat1);
+  const dLng = toRadians(lng2 - lng1);
+  
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+/**
+ * Convert degrees to radians
+ */
+function toRadians(degrees: number): number {
+  return degrees * (Math.PI / 180);
 }
 
 /**
@@ -213,10 +303,38 @@ export async function getTrainPosition(trainNumber: string): Promise<any | null>
       return null;
     }
 
+    // Convert GPS coordinates to station names if available
+    let currentStationName = train.currentStation;
+    let nextStationName = train.nextStation;
+    
+    // If we have GPS coordinates but not station names, try to resolve them
+    if (train.lat && train.lng && !currentStationName) {
+      const resolvedStation = await findStationByCoordinates(train.lat, train.lng);
+      if (resolvedStation) {
+        currentStationName = resolvedStation;
+      }
+    }
+    
+    // For next station, we'd need trajectory prediction - for now use fallback
+    if (!nextStationName) {
+      // Try to get next station from timetable
+      try {
+        const timetable = await fetchTrainTimetable(trainNumber);
+        if (timetable.length > 0 && currentStationName) {
+          const currentIndex = timetable.findIndex(entry => entry.stationName === currentStationName);
+          if (currentIndex >= 0 && currentIndex < timetable.length - 1) {
+            nextStationName = timetable[currentIndex + 1].stationName;
+          }
+        }
+      } catch (error) {
+        console.warn('Could not get timetable for next station lookup:', error);
+      }
+    }
+
     return {
       trainNumber: train.trainNumber,
-      currentStation: train.currentStation,
-      nextStation: train.nextStation,
+      currentStation: currentStationName || `GPS: ${train.lat?.toFixed(4)}, ${train.lng?.toFixed(4)}`,
+      nextStation: nextStationName || 'Neznámá',
       speed: train.speed || 0,
       lat: train.lat,
       lng: train.lng,
@@ -324,6 +442,7 @@ export default {
   fetchTrainPositions,
   fetchTrainTimetable,
   fetchStations,
+  findStationByCoordinates,
   getTrainPosition,
   calculateTrainDelay,
   filterTrains,
