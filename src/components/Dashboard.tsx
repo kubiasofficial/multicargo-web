@@ -134,7 +134,7 @@ export default function Dashboard() {
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-lg shadow-blue-500/20 p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <TruckIcon className="h-8 w-8 text-blue-400" />
@@ -146,7 +146,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-lg shadow-green-500/20 p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <CheckCircleIcon className="h-8 w-8 text-green-400" />
@@ -158,7 +158,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-lg shadow-purple-500/20 p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <ChartBarIcon className="h-8 w-8 text-purple-400" />
@@ -171,7 +171,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-lg shadow-orange-500/20 p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <ClockIcon className="h-8 w-8 text-orange-400" />
@@ -189,7 +189,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Active Rides */}
           <div className="lg:col-span-2">
-            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-lg shadow-cyan-500/20">
               <div className="p-6 border-b border-gray-700">
                 <h2 className="text-lg font-medium text-white">Aktivní jízdy</h2>
               </div>
@@ -197,16 +197,16 @@ export default function Dashboard() {
                 {activeRides.length > 0 ? (
                   <div className="space-y-4">
                     {activeRides.map((ride) => (
-                      <div key={ride.id} className="border border-gray-600 rounded-lg p-4 bg-gray-750">
+                      <div key={ride.id} className="border border-gray-600 rounded-lg p-4 bg-gradient-to-r from-gray-800 to-gray-750 shadow-lg shadow-blue-500/10">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-2">
                             <span className="font-bold text-lg text-white">{ride.trainNumber}</span>
                             <span className={`px-2 py-1 text-xs rounded-full ${
-                              ride.priority === 'HIGH' ? 'bg-red-900 text-red-200' :
-                              ride.priority === 'URGENT' ? 'bg-red-800 text-red-100' :
+                              ride.priority === 'HIGH' ? 'bg-red-900 text-red-200 shadow-red-500/20' :
+                              ride.priority === 'URGENT' ? 'bg-red-800 text-red-100 shadow-red-500/30' :
                               ride.priority === 'LOW' ? 'bg-gray-700 text-gray-300' :
-                              'bg-blue-900 text-blue-200'
-                            }`}>
+                              'bg-blue-900 text-blue-200 shadow-blue-500/20'
+                            } shadow-lg`}>
                               {ride.priority}
                             </span>
                           </div>
@@ -244,8 +244,8 @@ export default function Dashboard() {
                             <span>Postup jízdy</span>
                             <span>65%</span>
                           </div>
-                          <div className="w-full bg-gray-600 rounded-full h-2">
-                            <div className="bg-blue-500 h-2 rounded-full" style={{ width: '65%' }}></div>
+                          <div className="w-full bg-gray-600 rounded-full h-2 shadow-inner">
+                            <div className="bg-gradient-to-r from-blue-500 to-cyan-400 h-2 rounded-full shadow-lg shadow-blue-500/50" style={{ width: '65%' }}></div>
                           </div>
                         </div>
                       </div>
@@ -267,7 +267,7 @@ export default function Dashboard() {
             <LiveTracking />
             
             {/* Recent Rides */}
-            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-lg shadow-purple-500/20">
               <div className="p-6 border-b border-gray-700">
                 <h2 className="text-lg font-medium text-white">Poslední jízdy</h2>
               </div>
@@ -275,13 +275,16 @@ export default function Dashboard() {
                 {recentRides.length > 0 ? (
                   <div className="space-y-3">
                     {recentRides.map((ride) => (
-                      <div key={ride.id} className="flex items-center justify-between py-2">
+                      <div key={ride.id} className="flex items-center justify-between py-2 bg-gradient-to-r from-gray-800 to-gray-750 p-3 rounded-lg border border-gray-600 shadow-lg shadow-green-500/10">
                         <div>
                           <div className="font-medium text-white">{ride.trainNumber}</div>
                           <div className="text-sm text-gray-400">{ride.route}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm text-green-400">Dokončeno</div>
+                          <div className="text-sm text-green-400 flex items-center">
+                            <CheckCircleIcon className="h-4 w-4 mr-1" />
+                            Dokončeno
+                          </div>
                           <div className="text-xs text-gray-500">
                             {ride.departure.time.toLocaleDateString('cs-CZ')}
                           </div>
