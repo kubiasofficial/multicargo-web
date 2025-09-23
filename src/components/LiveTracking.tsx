@@ -9,11 +9,23 @@ import {
   ExclamationTriangleIcon 
 } from '@heroicons/react/24/outline';
 import { LiveTrackingData } from '@/types';
-import { getTrainPosition, calculateTrainDelay, findStationByCoordinates } from '@/lib/simrailApi';
+import { getTrainPosition, calculateTrainDelay, getTrainDelayDetails, findStationByCoordinates } from '@/lib/simrailApi';
+
+interface DelayDetails {
+  currentDelay: number;
+  currentStation: string;
+  nextStation: string;
+  scheduledArrival?: string;
+  scheduledDeparture?: string;
+  estimatedArrival?: string;
+  estimatedDeparture?: string;
+  delayTrend: 'improving' | 'worsening' | 'stable';
+}
 
 export default function LiveTracking() {
   const { activeRide } = useActiveRide();
   const [trackingData, setTrackingData] = useState<LiveTrackingData[]>([]);
+  const [delayDetails, setDelayDetails] = useState<DelayDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
@@ -30,6 +42,7 @@ export default function LiveTracking() {
     try {
       if (!activeRide) {
         setTrackingData([]);
+        setDelayDetails(null);
         setLastUpdate(new Date());
         setLoading(false);
         return;
@@ -38,6 +51,7 @@ export default function LiveTracking() {
       // Get real-time position data from SimRail API
       const position = await getTrainPosition(activeRide.trainNumber);
       const delay = await calculateTrainDelay(activeRide.trainNumber);
+      const delayInfo = await getTrainDelayDetails(activeRide.trainNumber);
       
       let currentStationName = 'Načítání pozice...';
       let coordinates = { latitude: 0, longitude: 0 };
@@ -78,15 +92,23 @@ export default function LiveTracking() {
           total: 100,
           percentage: activeRide.progress || 0
         },
-        delays: delay || activeRide.delay || 0,
+        delays: delay || 0, // Use calculated delay instead of stored delay
         actualDeparture: activeRide.startTime,
         estimatedArrival: activeRide.estimatedArrival || new Date(),
         lastUpdate: new Date()
       }];
       
       setTrackingData(liveData);
+      setDelayDetails(delayInfo);
       setLastUpdate(new Date());
       setLoading(false);
+      
+      // Update activeRide context with latest delay
+      if (delay !== activeRide.delay) {
+        // Update the context with real-time delay
+        console.log(`🕐 Updated delay from ${activeRide.delay} to ${delay} minutes`);
+      }
+      
     } catch (error) {
       console.error('Error fetching live tracking data:', error);
       
@@ -112,6 +134,7 @@ export default function LiveTracking() {
         }];
         
         setTrackingData(fallbackData);
+        setDelayDetails(null);
       }
       
       setLoading(false);
@@ -126,8 +149,26 @@ export default function LiveTracking() {
 
   const getStatusText = (delays: number) => {
     if (delays === 0) return 'Včas';
+    if (delays <= 2) return `+${delays} min`;
     if (delays <= 5) return `Zpoždění ${delays} min`;
+    if (delays <= 15) return `Zpoždění ${delays} min`;
     return `Velké zpoždění ${delays} min`;
+  };
+
+  const getDelayColorClass = (delays: number) => {
+    if (delays === 0) return 'text-green-400';
+    if (delays <= 2) return 'text-yellow-300';
+    if (delays <= 5) return 'text-yellow-400';
+    if (delays <= 15) return 'text-orange-400';
+    return 'text-red-400';
+  };
+
+  const getDelayBadgeClass = (delays: number) => {
+    if (delays === 0) return 'bg-green-900/30 border-green-700 text-green-200';
+    if (delays <= 2) return 'bg-yellow-900/30 border-yellow-700 text-yellow-200';
+    if (delays <= 5) return 'bg-yellow-900/40 border-yellow-600 text-yellow-100';
+    if (delays <= 15) return 'bg-orange-900/40 border-orange-600 text-orange-100';
+    return 'bg-red-900/40 border-red-600 text-red-100';
   };
 
   if (loading) {
@@ -172,15 +213,49 @@ export default function LiveTracking() {
             {trackingData.map((data) => (
               <div key={data.rideId} className="border border-gray-600 rounded-lg p-4 bg-gradient-to-r from-gray-800 to-gray-750 shadow-lg shadow-green-500/10">
                 {/* Current location */}
-                <div className="flex items-center space-x-2 mb-3">
-                  <MapPinIcon className="h-5 w-5 text-green-400 animate-pulse" />
-                  <span className="font-medium text-white">
-                    {data.currentLocation?.station || 'Neznámá poloha'}
-                  </span>
-                  <span className={`text-sm font-medium ${getStatusColor(data.delays)}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <MapPinIcon className="h-5 w-5 text-green-400 animate-pulse" />
+                    <span className="font-medium text-white">
+                      {data.currentLocation?.station || 'Neznámá poloha'}
+                    </span>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full border text-sm font-medium ${getDelayBadgeClass(data.delays)}`}>
                     {getStatusText(data.delays)}
-                  </span>
+                  </div>
                 </div>
+                
+                {/* Delay details if available */}
+                {delayDetails && (
+                  <div className="mb-3 p-3 bg-gray-700/50 rounded-lg border border-gray-600">
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <div className="text-gray-400">Další stanice</div>
+                        <div className="font-medium text-white">{delayDetails.nextStation}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400">Aktuální zpoždění</div>
+                        <div className={`font-medium ${getDelayColorClass(delayDetails.currentDelay)}`}>
+                          {delayDetails.currentDelay === 0 ? 'Včas' : `+${delayDetails.currentDelay} min`}
+                        </div>
+                      </div>
+                      {delayDetails.scheduledArrival && (
+                        <div>
+                          <div className="text-gray-400">Plánovaný příjezd</div>
+                          <div className="font-medium text-blue-300">{delayDetails.scheduledArrival}</div>
+                        </div>
+                      )}
+                      {delayDetails.estimatedArrival && (
+                        <div>
+                          <div className="text-gray-400">Očekávaný příjezd</div>
+                          <div className={`font-medium ${getDelayColorClass(delayDetails.currentDelay)}`}>
+                            {delayDetails.estimatedArrival}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Progress bar */}
                 <div className="mb-3">

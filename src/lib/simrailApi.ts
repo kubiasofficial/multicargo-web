@@ -348,6 +348,7 @@ export async function getTrainPosition(trainNumber: string): Promise<any | null>
 
 /**
  * Calculate delay based on timetable and current position
+ * Compares real time with scheduled arrival/departure times
  */
 export async function calculateTrainDelay(trainNumber: string): Promise<number> {
   try {
@@ -358,23 +359,166 @@ export async function calculateTrainDelay(trainNumber: string): Promise<number> 
       return 0;
     }
     
+    const now = new Date();
+    
     // Find current station in timetable
-    const currentStationEntry = timetable.find(entry => 
-      entry.stationName === position.currentStation
-    );
+    let currentStationEntry = null;
+    let currentStationIndex = -1;
+    
+    // First try to find by station name
+    if (position.currentStation) {
+      currentStationIndex = timetable.findIndex(entry => 
+        entry.stationName === position.currentStation
+      );
+      if (currentStationIndex >= 0) {
+        currentStationEntry = timetable[currentStationIndex];
+      }
+    }
+    
+    // If not found by name, find by time proximity
+    if (!currentStationEntry) {
+      const currentTimeStr = now.toTimeString().slice(0, 8); // HH:mm:ss
+      
+      for (let i = 0; i < timetable.length; i++) {
+        const entry = timetable[i];
+        const departureTime = entry.departureTime?.slice(11, 19);
+        const arrivalTime = entry.arrivalTime?.slice(11, 19);
+        
+        // Check if we're around this station's time
+        if (departureTime && currentTimeStr <= departureTime) {
+          currentStationIndex = Math.max(0, i - 1);
+          currentStationEntry = timetable[currentStationIndex] || entry;
+          break;
+        }
+      }
+    }
     
     if (!currentStationEntry) {
+      console.warn('Could not determine current station for delay calculation');
       return 0;
     }
     
-    // Calculate delay (simplified logic)
-    const now = new Date();
-    const scheduledTime = new Date(currentStationEntry.departureTime || currentStationEntry.arrivalTime || '');
+    console.log(`🕐 Calculating delay for station: ${currentStationEntry.stationName}`);
     
-    return Math.max(0, Math.round((now.getTime() - scheduledTime.getTime()) / 1000 / 60)); // minutes
+    // Determine if this is a stop or pass-through
+    const isStop = currentStationEntry.stopType !== 'TECHNICAL' && 
+                   currentStationEntry.arrivalTime && 
+                   currentStationEntry.departureTime;
+    
+    let scheduledTime: Date;
+    let delayType: string;
+    
+    if (isStop) {
+      // For stops, use departure time as reference
+      if (currentStationEntry.departureTime) {
+        scheduledTime = new Date(currentStationEntry.departureTime);
+        delayType = 'departure';
+      } else if (currentStationEntry.arrivalTime) {
+        scheduledTime = new Date(currentStationEntry.arrivalTime);
+        delayType = 'arrival';
+      } else {
+        return 0;
+      }
+    } else {
+      // For pass-through, use arrival time or departure time
+      if (currentStationEntry.arrivalTime) {
+        scheduledTime = new Date(currentStationEntry.arrivalTime);
+        delayType = 'pass-through';
+      } else if (currentStationEntry.departureTime) {
+        scheduledTime = new Date(currentStationEntry.departureTime);
+        delayType = 'pass-through';
+      } else {
+        return 0;
+      }
+    }
+    
+    // Calculate delay in minutes
+    const delayMs = now.getTime() - scheduledTime.getTime();
+    const delayMinutes = Math.round(delayMs / 1000 / 60);
+    
+    console.log(`📊 Delay calculation:`, {
+      station: currentStationEntry.stationName,
+      type: delayType,
+      scheduledTime: scheduledTime.toLocaleTimeString('cs-CZ'),
+      currentTime: now.toLocaleTimeString('cs-CZ'),
+      delayMinutes: Math.max(0, delayMinutes),
+      isStop
+    });
+    
+    // Return positive delay only (negative means we're early)
+    return Math.max(0, delayMinutes);
+    
   } catch (error) {
     console.error('Error calculating delay:', error);
     return 0;
+  }
+}
+
+/**
+ * Get detailed delay information for a train
+ */
+export async function getTrainDelayDetails(trainNumber: string): Promise<{
+  currentDelay: number;
+  currentStation: string;
+  nextStation: string;
+  scheduledArrival?: string;
+  scheduledDeparture?: string;
+  estimatedArrival?: string;
+  estimatedDeparture?: string;
+  delayTrend: 'improving' | 'worsening' | 'stable';
+} | null> {
+  try {
+    const timetable = await fetchTrainTimetable(trainNumber);
+    const position = await getTrainPosition(trainNumber);
+    const currentDelay = await calculateTrainDelay(trainNumber);
+    
+    if (!timetable.length || !position) {
+      return null;
+    }
+    
+    // Find current and next station
+    let currentStationIndex = -1;
+    let nextStationIndex = -1;
+    
+    if (position.currentStation) {
+      currentStationIndex = timetable.findIndex(entry => 
+        entry.stationName === position.currentStation
+      );
+      nextStationIndex = currentStationIndex + 1;
+    }
+    
+    const currentStation = timetable[currentStationIndex];
+    const nextStation = timetable[nextStationIndex];
+    
+    // Calculate estimated times with current delay
+    let estimatedArrival, estimatedDeparture;
+    
+    if (nextStation) {
+      if (nextStation.arrivalTime) {
+        const scheduled = new Date(nextStation.arrivalTime);
+        estimatedArrival = new Date(scheduled.getTime() + currentDelay * 60000).toLocaleTimeString('cs-CZ');
+      }
+      
+      if (nextStation.departureTime) {
+        const scheduled = new Date(nextStation.departureTime);
+        estimatedDeparture = new Date(scheduled.getTime() + currentDelay * 60000).toLocaleTimeString('cs-CZ');
+      }
+    }
+    
+    return {
+      currentDelay,
+      currentStation: position.currentStation || 'Neznámá',
+      nextStation: position.nextStation || nextStation?.stationName || 'Neznámá',
+      scheduledArrival: nextStation?.arrivalTime?.slice(11, 19),
+      scheduledDeparture: nextStation?.departureTime?.slice(11, 19),
+      estimatedArrival,
+      estimatedDeparture,
+      delayTrend: 'stable' // TODO: Implement trend analysis
+    };
+    
+  } catch (error) {
+    console.error('Error getting delay details:', error);
+    return null;
   }
 }
 
@@ -445,6 +589,7 @@ export default {
   findStationByCoordinates,
   getTrainPosition,
   calculateTrainDelay,
+  getTrainDelayDetails,
   filterTrains,
   isTrainAvailable,
   getFormattedRoute,

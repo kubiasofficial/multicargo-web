@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { ActiveRide, SimRailTimetableEntry } from '@/types';
 import { getTrainImage, getTrainTypeDescription } from '@/lib/trainImages';
-import { fetchTrainTimetable, getTrainPosition, calculateTrainDelay } from '@/lib/simrailApi';
+import { fetchTrainTimetable, getTrainPosition, calculateTrainDelay, getTrainDelayDetails } from '@/lib/simrailApi';
 import { sendRideEndNotification } from '@/lib/discord';
 
 interface FloatingRideWindowProps {
@@ -41,6 +41,7 @@ export default function FloatingRideWindow({
     speed: 0,
     progress: activeRide.progress || 0
   });
+  const [delayDetails, setDelayDetails] = useState<any>(null);
   const [loadingTimetable, setLoadingTimetable] = useState(false);
 
   // Function to find current and next station from timetable based on current time
@@ -106,17 +107,31 @@ export default function FloatingRideWindow({
       try {
         const position = await getTrainPosition(activeRide.trainNumber);
         const delay = await calculateTrainDelay(activeRide.trainNumber);
+        const delayInfo = await getTrainDelayDetails(activeRide.trainNumber);
         
         if (position) {
           setRealTimeData(prev => ({
             ...prev,
             currentStation: position.currentStation || prev.currentStation,
             nextStation: position.nextStation || prev.nextStation,
-            delay: delay,
+            delay: delay, // Use calculated delay
             speed: position.speed || 0,
             progress: position.progress || prev.progress
           }));
         }
+        
+        if (delayInfo) {
+          setDelayDetails(delayInfo);
+        }
+        
+        // Log delay calculation details for debugging
+        console.log('🚂 Real-time data update:', {
+          train: activeRide.trainNumber,
+          currentStation: position?.currentStation,
+          calculatedDelay: delay,
+          delayDetails: delayInfo
+        });
+        
       } catch (error) {
         console.error('Error fetching real-time data:', error);
       }
@@ -275,12 +290,26 @@ export default function FloatingRideWindow({
                   <ClockIcon className="h-4 w-4 mr-1" />
                   <span className="text-sm">Zpoždění</span>
                 </div>
-                <p className={`font-medium text-sm ${
-                  realTimeData.delay > 5 ? 'text-red-400' : 
-                  realTimeData.delay > 0 ? 'text-yellow-400' : 'text-green-400'
-                }`}>
-                  {realTimeData.delay > 0 ? `+${realTimeData.delay} min` : 'Na čas'}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className={`font-medium text-sm ${
+                    realTimeData.delay > 15 ? 'text-red-400' : 
+                    realTimeData.delay > 5 ? 'text-orange-400' :
+                    realTimeData.delay > 2 ? 'text-yellow-400' :
+                    realTimeData.delay > 0 ? 'text-yellow-300' : 'text-green-400'
+                  }`}>
+                    {realTimeData.delay > 0 ? `+${realTimeData.delay} min` : 'Včas'}
+                  </p>
+                  {delayDetails && delayDetails.nextStation && (
+                    <div className="text-xs text-gray-400">
+                      {delayDetails.scheduledArrival && (
+                        <div>Plán: {delayDetails.scheduledArrival}</div>
+                      )}
+                      {delayDetails.estimatedArrival && realTimeData.delay > 0 && (
+                        <div>Oček: {delayDetails.estimatedArrival}</div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="bg-gray-700 rounded-lg p-3 border border-gray-600">
@@ -425,10 +454,12 @@ export default function FloatingRideWindow({
               <div className="text-right">
                 <p className="text-white text-sm">{getJourneyDuration()}</p>
                 <p className={`text-xs ${
-                  realTimeData.delay > 5 ? 'text-red-400' : 
-                  realTimeData.delay > 0 ? 'text-yellow-400' : 'text-green-400'
+                  realTimeData.delay > 15 ? 'text-red-400' : 
+                  realTimeData.delay > 5 ? 'text-orange-400' :
+                  realTimeData.delay > 2 ? 'text-yellow-400' :
+                  realTimeData.delay > 0 ? 'text-yellow-300' : 'text-green-400'
                 }`}>
-                  {realTimeData.delay > 0 ? `+${realTimeData.delay}min` : 'Na čas'}
+                  {realTimeData.delay > 0 ? `+${realTimeData.delay}min` : 'Včas'}
                 </p>
               </div>
             </div>
