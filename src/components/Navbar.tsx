@@ -1,6 +1,6 @@
 'use client';
 
-import { signIn, signOut, useSession } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   UserIcon, 
   Cog6ToothIcon,
@@ -14,7 +14,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Navbar() {
-  const { data: session, status } = useSession();
+  const { user, loading, signIn, signOut } = useAuth();
 
   return (
     <nav className="bg-gray-900 border-b border-gray-700">
@@ -28,7 +28,7 @@ export default function Navbar() {
               </div>
             </Link>
             
-            {session && (
+            {user && (
               <div className="hidden md:flex items-center space-x-6">
                 <Link 
                   href="/dashboard" 
@@ -46,7 +46,7 @@ export default function Navbar() {
                   <span>Jízdy</span>
                 </Link>
                 
-                {session.user.roles.includes('ADMIN') && (
+                {user.roles.includes('ADMIN') && (
                   <Link 
                     href="/admin" 
                     className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors"
@@ -61,17 +61,17 @@ export default function Navbar() {
 
           {/* User section */}
           <div className="flex items-center">
-            {status === 'loading' ? (
+            {loading ? (
               <div className="animate-pulse">
                 <div className="h-8 w-8 bg-gray-600 rounded-full"></div>
               </div>
-            ) : session ? (
+            ) : user ? (
               <div className="flex items-center space-x-4">
                 {/* User info */}
                 <div className="hidden md:flex items-center space-x-3">
                   <div className="relative">
                     <Image
-                      src={getDiscordAvatarUrl(session.user.discordId, session.user.avatar)}
+                      src={getDiscordAvatarUrl(user.discordId, user.avatar)}
                       alt="Avatar"
                       width={32}
                       height={32}
@@ -82,17 +82,17 @@ export default function Navbar() {
                   
                   <div className="text-sm">
                     <div className="text-white font-medium">
-                      {formatDiscordUsername(session.user.username, session.user.discriminator)}
+                      {formatDiscordUsername(user.username, user.discriminator)}
                     </div>
                     <div className="text-gray-400">
-                      {session.user.roles.map(role => getRoleDisplayName(role)).join(', ')}
+                      {user.roles.map(role => getRoleDisplayName(role as any)).join(', ')}
                     </div>
                   </div>
                 </div>
 
                 {/* Sign out button */}
                 <button
-                  onClick={() => signOut()}
+                  onClick={signOut}
                   className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
                 >
                   <ArrowRightOnRectangleIcon className="h-4 w-4" />
@@ -101,7 +101,7 @@ export default function Navbar() {
               </div>
             ) : (
               <button
-                onClick={() => signIn('discord')}
+                onClick={signIn}
                 className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors"
               >
                 <ArrowLeftOnRectangleIcon className="h-4 w-4" />

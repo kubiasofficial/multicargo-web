@@ -1,23 +1,23 @@
 'use client';
 
-import { useSession, signIn } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 import { redirect } from 'next/navigation';
 import { useEffect } from 'react';
 import Dashboard from '@/components/Dashboard';
 
 export default function Home() {
-  const { data: session, status } = useSession();
+  const { user, loading, signIn } = useAuth();
 
   useEffect(() => {
-    if (status === 'loading') return; // Still loading
+    if (loading) return; // Still loading
     
-    if (session) {
+    if (user) {
       // User is signed in, redirect to dashboard
       redirect('/dashboard');
     }
-  }, [session, status]);
+  }, [user, loading]);
 
-  if (status === 'loading') {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
@@ -25,7 +25,7 @@ export default function Home() {
     );
   }
 
-  if (session) {
+  if (user) {
     return <Dashboard />;
   }
 
@@ -77,7 +77,7 @@ export default function Home() {
               Připojte se k MultiCargo týmu a začněte efektivně spravovat vaše železniční jízdy
             </p>
             <button
-              onClick={() => signIn('discord', { callbackUrl: '/dashboard' })}
+              onClick={signIn}
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 flex items-center gap-3 mx-auto"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
