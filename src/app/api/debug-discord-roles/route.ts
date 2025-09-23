@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     console.log('[DEBUG-DISCORD-ROLES] Starting...');
     
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     const roles = await rolesResponse.json();
     
     // Map role names to IDs for easier debugging
-    const roleMapping = roles.map((role: any) => ({
+    const roleMapping = roles.map((role: { id: string; name: string }) => ({
       id: role.id,
       name: role.name,
       isConfigured: {

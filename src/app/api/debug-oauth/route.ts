@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Test role mapping
-    let mappedRoles = [];
+    const mappedRoles = [];
     if (memberData?.roles) {
       const userRoles = memberData.roles;
       

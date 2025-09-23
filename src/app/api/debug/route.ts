@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   console.log('Debug: Environment variables check');
   console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
   console.log('NEXTAUTH_SECRET exists:', !!process.env.NEXTAUTH_SECRET);
