@@ -42,22 +42,22 @@ export async function fetchAvailableTrains(): Promise<SimRailTrain[]> {
       console.log('Processing train:', train);
       return {
         id: train.id || `${train.trainNumber}-${Date.now()}`,
-        trainNumber: train.trainNumber || train.TrainNumber || 'Unknown',
-        trainName: train.trainName || train.TrainName,
-        startStation: train.startStation || train.StartStation || 'Unknown',
-        endStation: train.endStation || train.EndStation || 'Unknown',
-        currentStation: train.currentStation || train.CurrentStation,
-        nextStation: train.nextStation || train.NextStation,
+        trainNumber: train.trainNumber || 'Unknown',
+        trainName: train.trainName || '',
+        startStation: train.startStation || 'Unknown',
+        endStation: train.endStation || 'Unknown',
+        currentStation: train.currentStation,
+        nextStation: train.nextStation,
         serverCode: SERVER_CODE,
-        type: train.type || train.Type || extractTrainType(train.trainNumber || train.TrainNumber),
-        company: train.company || train.Company,
-        speed: train.speed || train.Speed,
-        maxSpeed: train.maxSpeed || train.MaxSpeed,
-        signal: train.signal || train.Signal,
-        distance: train.distance || train.Distance,
-        distanceToSignalInFront: train.distanceToSignalInFront || train.DistanceToSignalInFront,
-        lat: train.lat || train.Lat,
-        lng: train.lng || train.Lng
+        type: train.type || extractTrainType(train.trainNumber),
+        company: train.company || 'Unknown',
+        speed: train.speed || 0,
+        maxSpeed: train.maxSpeed || 0,
+        signal: train.signal,
+        distance: train.distance,
+        distanceToSignalInFront: train.distanceToSignalInFront,
+        lat: train.lat,
+        lng: train.lng
       };
     });
     

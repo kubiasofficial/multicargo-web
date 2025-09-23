@@ -21,10 +21,53 @@ export async function GET(request: NextRequest) {
       throw new Error(`SimRail API error: ${response.status} - ${response.statusText}`);
     }
 
-    const data = await response.json();
-    console.log('SimRail API response:', data);
+    const apiResponse = await response.json();
+    console.log('SimRail API full response:', apiResponse);
 
-    return NextResponse.json(data, {
+    // Check if response has the expected structure
+    let trainsData = [];
+    if (apiResponse.result && Array.isArray(apiResponse.data)) {
+      trainsData = apiResponse.data;
+    } else if (Array.isArray(apiResponse)) {
+      trainsData = apiResponse;
+    } else {
+      console.error('Unexpected API response structure:', apiResponse);
+      throw new Error('Invalid API response structure');
+    }
+
+    console.log('Extracted trains data:', trainsData);
+    console.log('Number of trains found:', trainsData.length);
+
+    // Transform the data to match our expected format
+    const transformedData = trainsData
+      .filter((train: any) => {
+        // Only include trains that are not controlled by players (available for taking)
+        return !train.TrainData?.ControlledBySteamId;
+      })
+      .map((train: any) => ({
+        id: train.TrainNoLocal || train.id || `train-${Date.now()}-${Math.random()}`,
+        trainNumber: train.TrainNoLocal || train.trainNumber || 'Unknown',
+        trainName: train.TrainName || train.trainName || '',
+        startStation: train.StartStation || train.startStation || 'Unknown',
+        endStation: train.EndStation || train.endStation || 'Unknown',
+        currentStation: train.TrainData?.CurrentStation || train.currentStation,
+        nextStation: train.TrainData?.NextStation || train.nextStation,
+        type: 'AVAILABLE',
+        company: 'SimRail',
+        speed: train.TrainData?.Velocity || train.speed || 0,
+        maxSpeed: train.TrainData?.MaxVelocity || train.maxSpeed || 0,
+        signal: train.TrainData?.Signal || train.signal,
+        distance: train.TrainData?.Distance || train.distance,
+        distanceToSignalInFront: train.TrainData?.DistanceToSignalInFront || train.distanceToSignalInFront,
+        lat: train.TrainData?.Latitude || train.lat,
+        lng: train.TrainData?.Longitude || train.lng,
+        vehicles: train.Vehicles || [],
+        serverCode: train.ServerCode || serverCode
+      }));
+
+    console.log('Transformed data:', transformedData);
+
+    return NextResponse.json(transformedData, {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET',
