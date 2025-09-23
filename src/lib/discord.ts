@@ -1,5 +1,5 @@
 // Discord webhook integration for MultiCargo
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1419960769977782383/z-dGrLMR4FNlnnBaFEhfA0sZZWAvbUK1lNUkMH3bCjXoqTqwdbL_IH-SU9opElzFDH-I';
 const DISCORD_CHANNEL_ID = '1418624695829532764';
 
 export interface DiscordEmbedField {
