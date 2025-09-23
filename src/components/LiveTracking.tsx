@@ -9,6 +9,7 @@ import {
   ExclamationTriangleIcon 
 } from '@heroicons/react/24/outline';
 import { LiveTrackingData } from '@/types';
+import { getTrainPosition, calculateTrainDelay, findStationByCoordinates } from '@/lib/simrailApi';
 
 export default function LiveTracking() {
   const { activeRide } = useActiveRide();
@@ -27,31 +28,92 @@ export default function LiveTracking() {
 
   const fetchLiveData = async () => {
     try {
-      // Use active ride data if available, otherwise show empty
-      const liveData: LiveTrackingData[] = activeRide ? [{
+      if (!activeRide) {
+        setTrackingData([]);
+        setLastUpdate(new Date());
+        setLoading(false);
+        return;
+      }
+
+      // Get real-time position data from SimRail API
+      const position = await getTrainPosition(activeRide.trainNumber);
+      const delay = await calculateTrainDelay(activeRide.trainNumber);
+      
+      let currentStationName = 'Načítání pozice...';
+      let coordinates = { latitude: 0, longitude: 0 };
+      
+      if (position) {
+        // Use the station name from position if available
+        currentStationName = position.currentStation || 'Neznámá stanice';
+        
+        // Set coordinates if available
+        if (position.lat && position.lng) {
+          coordinates = {
+            latitude: position.lat,
+            longitude: position.lng
+          };
+          
+          // If no station name but we have coordinates, try to resolve
+          if (!position.currentStation) {
+            const resolvedStation = await findStationByCoordinates(position.lat, position.lng);
+            if (resolvedStation) {
+              currentStationName = resolvedStation;
+            } else {
+              currentStationName = `GPS: ${position.lat.toFixed(4)}, ${position.lng.toFixed(4)}`;
+            }
+          }
+        }
+      }
+
+      const liveData: LiveTrackingData[] = [{
         rideId: activeRide.id,
         userId: activeRide.userId,
         currentLocation: {
-          latitude: 49.2, // TODO: Get from SimRail API
-          longitude: 16.6,
-          station: activeRide.currentStation || 'Neznámá stanice'
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
+          station: currentStationName
         },
         progress: {
-          current: activeRide.progress || 0,
+          current: Math.round((activeRide.progress || 0) * 100) / 100, // Real progress
           total: 100,
           percentage: activeRide.progress || 0
         },
-        delays: activeRide.delay || 0,
+        delays: delay || activeRide.delay || 0,
         actualDeparture: activeRide.startTime,
         estimatedArrival: activeRide.estimatedArrival || new Date(),
         lastUpdate: new Date()
-      }] : [];
+      }];
       
       setTrackingData(liveData);
       setLastUpdate(new Date());
       setLoading(false);
     } catch (error) {
       console.error('Error fetching live tracking data:', error);
+      
+      // Fallback to activeRide data if API fails
+      if (activeRide) {
+        const fallbackData: LiveTrackingData[] = [{
+          rideId: activeRide.id,
+          userId: activeRide.userId,
+          currentLocation: {
+            latitude: 0,
+            longitude: 0,
+            station: activeRide.currentStation || 'Chyba načítání pozice'
+          },
+          progress: {
+            current: activeRide.progress || 0,
+            total: 100,
+            percentage: activeRide.progress || 0
+          },
+          delays: activeRide.delay || 0,
+          actualDeparture: activeRide.startTime,
+          estimatedArrival: activeRide.estimatedArrival || new Date(),
+          lastUpdate: new Date()
+        }];
+        
+        setTrackingData(fallbackData);
+      }
+      
       setLoading(false);
     }
   };

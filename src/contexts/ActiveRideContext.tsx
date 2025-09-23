@@ -140,8 +140,55 @@ export function ActiveRideProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    const endTime = new Date();
+    const duration = Math.floor((endTime.getTime() - activeRide.startTime.getTime()) / 1000 / 60); // minutes
+
     // Update ride status to completed
-    setActiveRide(prev => prev ? { ...prev, status: 'COMPLETED', actualArrival: new Date() } : null);
+    const completedRide = { 
+      ...activeRide, 
+      status: 'COMPLETED' as const, 
+      actualArrival: endTime 
+    };
+    setActiveRide(completedRide);
+
+    // Save completed ride to recent rides
+    try {
+      const recentRideData = {
+        trainNumber: activeRide.trainNumber,
+        route: activeRide.route,
+        departure: { 
+          station: activeRide.startStation, 
+          time: activeRide.startTime.toISOString() 
+        },
+        arrival: { 
+          station: activeRide.endStation, 
+          time: endTime.toISOString() 
+        },
+        status: 'COMPLETED',
+        assignedUserId: activeRide.userId,
+        createdBy: 'system',
+        createdAt: activeRide.startTime.toISOString(),
+        priority: 'NORMAL',
+        actualDuration: duration,
+        finalDelay: activeRide.delay || 0
+      };
+
+      const response = await fetch('/api/rides/recent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(recentRideData)
+      });
+
+      if (response.ok) {
+        console.log('✅ Completed ride saved to recent rides');
+      } else {
+        console.warn('⚠️ Failed to save completed ride to recent rides');
+      }
+    } catch (error) {
+      console.error('❌ Error saving completed ride:', error);
+    }
 
     // TODO: Save final ride data to Firebase
     // TODO: Update user statistics

@@ -77,21 +77,37 @@ export default function Dashboard() {
 
       setActiveRides(currentActiveRides_array);
 
-      setRecentRides([
-        {
-          id: '2',
-          trainNumber: 'Os 7331',
-          route: 'Brno hl.n. → Blansko',
-          departure: { station: 'Brno hl.n.', time: new Date('2024-12-22T12:00:00') },
-          arrival: { station: 'Blansko', time: new Date('2024-12-22T12:45:00') },
-          status: 'COMPLETED',
-          assignedUserId: user?.id || '',
-          createdBy: 'dispatcher1',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          priority: 'LOW'
+      // Fetch real recent rides from API
+      try {
+        const recentRidesResponse = await fetch(`/api/rides/recent?userId=${user?.id}&limit=5`);
+        if (recentRidesResponse.ok) {
+          const recentRidesData = await recentRidesResponse.json();
+          if (recentRidesData.success) {
+            setRecentRides(recentRidesData.data.map((ride: any) => ({
+              ...ride,
+              departure: {
+                ...ride.departure,
+                time: new Date(ride.departure.time)
+              },
+              arrival: {
+                ...ride.arrival,
+                time: new Date(ride.arrival.time)
+              },
+              createdAt: new Date(ride.createdAt),
+              updatedAt: new Date(ride.updatedAt)
+            })));
+          } else {
+            console.warn('Failed to fetch recent rides:', recentRidesData.error);
+            setRecentRides([]);
+          }
+        } else {
+          console.warn('Recent rides API responded with error:', recentRidesResponse.status);
+          setRecentRides([]);
         }
-      ]);
+      } catch (error) {
+        console.error('Error fetching recent rides:', error);
+        setRecentRides([]);
+      }
 
       setLoading(false);
     } catch (error) {
