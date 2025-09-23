@@ -40,18 +40,40 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // Calculate stats based on active ride and historical data
-      const totalRides = 45; // From database
-      const completedRides = 42; // From database
+      // Fetch real user statistics from API
+      let userStats = {
+        totalRides: 0,
+        completedRides: 0,
+        activeRides: 0,
+        points: 0,
+        level: 1,
+        streak: 0
+      };
+
+      try {
+        const statsResponse = await fetch(`/api/user/stats?userId=${user?.id}`);
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json();
+          if (statsData.success) {
+            userStats = statsData.data;
+          }
+        } else {
+          console.warn('Failed to fetch user stats, using defaults');
+        }
+      } catch (error) {
+        console.error('Error fetching user stats:', error);
+      }
+
+      // Calculate current active rides based on activeRide context
       const currentActiveRides = activeRide ? 1 : 0;
       
       setStats({
-        totalRides: totalRides + currentActiveRides,
-        completedRides: completedRides,
+        totalRides: userStats.totalRides,
+        completedRides: userStats.completedRides,
         activeRides: currentActiveRides,
-        points: 1250, // From database
-        level: 13, // From database
-        streak: 7 // From database
+        points: userStats.points,
+        level: userStats.level,
+        streak: userStats.streak
       });
 
       // Set active rides based on current active ride

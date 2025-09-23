@@ -53,6 +53,13 @@ export default function LiveTracking() {
       const delay = await calculateTrainDelay(activeRide.trainNumber);
       const delayInfo = await getTrainDelayDetails(activeRide.trainNumber);
       
+      console.log('🚂 LiveTracking position data:', {
+        trainNumber: activeRide.trainNumber,
+        position,
+        hasCoordinates: position?.lat && position?.lng,
+        currentStation: position?.currentStation
+      });
+      
       let currentStationName = 'Načítání pozice...';
       let coordinates = { latitude: 0, longitude: 0 };
       
@@ -67,16 +74,34 @@ export default function LiveTracking() {
             longitude: position.lng
           };
           
+          console.log('🗺️ Attempting to resolve coordinates:', {
+            lat: position.lat,
+            lng: position.lng,
+            hasStationName: !!position.currentStation
+          });
+          
           // If no station name but we have coordinates, try to resolve
           if (!position.currentStation) {
-            const resolvedStation = await findStationByCoordinates(position.lat, position.lng);
-            if (resolvedStation) {
-              currentStationName = resolvedStation;
-            } else {
+            try {
+              const resolvedStation = await findStationByCoordinates(position.lat, position.lng);
+              console.log('🎯 Station lookup result:', resolvedStation);
+              
+              if (resolvedStation) {
+                currentStationName = resolvedStation;
+              } else {
+                currentStationName = `GPS: ${position.lat.toFixed(4)}, ${position.lng.toFixed(4)}`;
+                console.warn('❌ No station found for coordinates, showing GPS');
+              }
+            } catch (lookupError) {
+              console.error('❌ Error during station lookup:', lookupError);
               currentStationName = `GPS: ${position.lat.toFixed(4)}, ${position.lng.toFixed(4)}`;
             }
           }
+        } else {
+          console.warn('⚠️ No GPS coordinates available in position data');
         }
+      } else {
+        console.warn('⚠️ No position data received from getTrainPosition');
       }
 
       const liveData: LiveTrackingData[] = [{

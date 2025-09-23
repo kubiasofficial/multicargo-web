@@ -109,8 +109,9 @@ export async function GET(request: NextRequest) {
     const sessionData = {
       user: {
         id: userData.id,
+        discordId: userData.id, // Explicitly set discordId
         username: userData.username,
-        discriminator: userData.discriminator,
+        discriminator: userData.discriminator || '0', // Discord removed discriminators for most users
         avatar: userData.avatar,
         roles: roles
       },

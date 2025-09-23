@@ -119,6 +119,22 @@ export function ActiveRideProvider({ children }: { children: ReactNode }) {
 
     setActiveRide(newRide);
 
+    // Update user statistics
+    try {
+      await fetch('/api/user/stats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          action: 'START_RIDE'
+        })
+      });
+    } catch (error) {
+      console.error('Error updating user stats:', error);
+    }
+
     // Send Discord notification
     try {
       await sendRideStartNotification(
@@ -150,6 +166,26 @@ export function ActiveRideProvider({ children }: { children: ReactNode }) {
       actualArrival: endTime 
     };
     setActiveRide(completedRide);
+
+    // Update user statistics
+    try {
+      await fetch('/api/user/stats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: activeRide.userId,
+          action: 'COMPLETE_RIDE',
+          data: {
+            delay: activeRide.delay || 0,
+            duration: duration
+          }
+        })
+      });
+    } catch (error) {
+      console.error('Error updating user stats:', error);
+    }
 
     // Save completed ride to recent rides
     try {

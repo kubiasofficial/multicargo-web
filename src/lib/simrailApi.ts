@@ -4,6 +4,16 @@ const SIMRAIL_BASE_URL = 'https://panel.simrail.eu:8084';
 const SIMRAIL_API_URL = 'https://api1.aws.simrail.eu:8082';
 const SERVER_CODE = 'cz1';
 
+// Get base URL for API calls (works both client and server side)
+const getBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    // Client side
+    return window.location.origin;
+  }
+  // Server side
+  return process.env.NEXTAUTH_URL || 'http://localhost:3000';
+};
+
 /**
  * Fetch all available trains from SimRail API via our proxy
  */
@@ -11,7 +21,8 @@ export async function fetchAvailableTrains(): Promise<SimRailTrain[]> {
   try {
     console.log('Fetching trains via proxy endpoint...');
     
-    const response = await fetch(`/api/simrail/trains?serverCode=${SERVER_CODE}`, {
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/simrail/trains?serverCode=${SERVER_CODE}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -162,7 +173,8 @@ export async function fetchTrainPositions(): Promise<any[]> {
 export async function fetchTrainTimetable(trainNumber: string): Promise<SimRailTimetableEntry[]> {
   try {
     // Use our new proxy endpoint for timetables
-    const response = await fetch(`/api/simrail/timetable/${trainNumber}`);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/simrail/timetable/${trainNumber}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -182,7 +194,8 @@ export async function fetchTrainTimetable(trainNumber: string): Promise<SimRailT
  */
 export async function fetchStations(): Promise<SimRailStation[]> {
   try {
-    const response = await fetch(`/api/simrail/stations?serverCode=${SERVER_CODE}`);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/simrail/stations?serverCode=${SERVER_CODE}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -300,8 +313,17 @@ export async function getTrainPosition(trainNumber: string): Promise<any | null>
     const train = trains.find(t => t.trainNumber === trainNumber);
     
     if (!train) {
+      console.warn(`⚠️ Train ${trainNumber} not found in available trains`);
       return null;
     }
+
+    console.log(`🚂 Found train ${trainNumber}:`, {
+      trainNumber: train.trainNumber,
+      hasCoordinates: !!(train.lat && train.lng),
+      coordinates: train.lat && train.lng ? `${train.lat}, ${train.lng}` : 'None',
+      currentStation: train.currentStation || 'None',
+      nextStation: train.nextStation || 'None'
+    });
 
     // Convert GPS coordinates to station names if available
     let currentStationName = train.currentStation;
@@ -309,9 +331,13 @@ export async function getTrainPosition(trainNumber: string): Promise<any | null>
     
     // If we have GPS coordinates but not station names, try to resolve them
     if (train.lat && train.lng && !currentStationName) {
+      console.log(`🗺️ Attempting to resolve GPS ${train.lat}, ${train.lng} to station name`);
       const resolvedStation = await findStationByCoordinates(train.lat, train.lng);
       if (resolvedStation) {
         currentStationName = resolvedStation;
+        console.log(`✅ Resolved to station: ${resolvedStation}`);
+      } else {
+        console.warn(`❌ Could not resolve GPS coordinates to station`);
       }
     }
     
@@ -324,6 +350,7 @@ export async function getTrainPosition(trainNumber: string): Promise<any | null>
           const currentIndex = timetable.findIndex(entry => entry.stationName === currentStationName);
           if (currentIndex >= 0 && currentIndex < timetable.length - 1) {
             nextStationName = timetable[currentIndex + 1].stationName;
+            console.log(`📍 Next station from timetable: ${nextStationName}`);
           }
         }
       } catch (error) {
@@ -331,7 +358,7 @@ export async function getTrainPosition(trainNumber: string): Promise<any | null>
       }
     }
 
-    return {
+    const result = {
       trainNumber: train.trainNumber,
       currentStation: currentStationName || `GPS: ${train.lat?.toFixed(4)}, ${train.lng?.toFixed(4)}`,
       nextStation: nextStationName || 'Neznámá',
@@ -340,6 +367,10 @@ export async function getTrainPosition(trainNumber: string): Promise<any | null>
       lng: train.lng,
       progress: 50 // TODO: Calculate actual progress based on timetable
     };
+
+    console.log(`📊 Final position result:`, result);
+    return result;
+    
   } catch (error) {
     console.error('Error getting train position:', error);
     return null;

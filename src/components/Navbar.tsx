@@ -76,6 +76,12 @@ export default function Navbar() {
                       width={32}
                       height={32}
                       className="rounded-full"
+                      onError={(e) => {
+                        console.error('Avatar failed to load:', getDiscordAvatarUrl(user.discordId, user.avatar));
+                        // Fallback to default Discord avatar
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discordId) % 5}.png`;
+                      }}
                     />
                     <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 border-2 border-gray-900 rounded-full"></div>
                   </div>
