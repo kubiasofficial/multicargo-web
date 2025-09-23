@@ -462,7 +462,8 @@ export default function RidesPage() {
                                 alt={train.trainNumber}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
-                                  (e.target as HTMLImageElement).src = 'https://wiki.simrail.eu/vehicles_logo.png';
+                                  console.log('Image failed to load:', (e.target as HTMLImageElement).src);
+                                  (e.target as HTMLImageElement).src = '/images/trains/eu07-005.jpg';
                                 }}
                               />
                             </div>
