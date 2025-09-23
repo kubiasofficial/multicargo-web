@@ -217,10 +217,11 @@ export const trainDetails: TrainDetailsMapping = {
 
 // Fallback images for unknown train types
 export const fallbackImages = {
-  electric: 'https://wiki.simrail.eu/vehicle/eu07-005.jpg',
-  emu: 'https://wiki.simrail.eu/vehicle/poland/trains/emu/kibel/kibel_main.jpg',
-  steam: 'https://wiki.simrail.eu/vehicle/poland/trains/steam/ty2/ty2_main.jpg',
-  default: 'https://wiki.simrail.eu/vehicles_logo.png'
+  electric: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  emu: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/EN57-1752.jpg/300px-EN57-1752.jpg', 
+  steam: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/TKt48-191_locomotive.jpg/300px-TKt48-191_locomotive.jpg',
+  diesel: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/SP32-012.jpg/300px-SP32-012.jpg',
+  default: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Train_icon.svg/200px-Train_icon.svg.png'
 };
 
 /**
@@ -251,6 +252,11 @@ export function getTrainImage(trainNumber: string, trainType?: string): string {
     if (trainNumber.includes(key) || (trainType && trainType.includes(key))) {
       return image;
     }
+  }
+  
+  // For numerical train numbers (SimRail), return electric locomotive fallback
+  if (/^\d+$/.test(trainNumber)) {
+    return fallbackImages.electric;
   }
   
   return fallbackImages.default;
@@ -349,7 +355,30 @@ export function getTrainTypeDescription(trainType: string): string {
     'Ty2': 'Parní lokomotiva BR 52',
   };
   
-  return descriptions[trainType] || 'Neznámý typ vozidla';
+  // Check exact match first
+  if (descriptions[trainType]) {
+    return descriptions[trainType];
+  }
+  
+  // Extract locomotive type and find description
+  const extractedType = extractLocomotiveType(trainType);
+  if (extractedType && descriptions[extractedType]) {
+    return descriptions[extractedType];
+  }
+  
+  // For numerical train numbers, provide general description
+  if (/^\d+$/.test(trainType)) {
+    return 'Vlak SimRail - Elektrická nebo dieselová trakce';
+  }
+  
+  // Check if it contains any known locomotive prefix
+  for (const [key, desc] of Object.entries(descriptions)) {
+    if (trainType.includes(key)) {
+      return desc;
+    }
+  }
+  
+  return 'Neznámý typ vozidla';
 }
 
 export default {
