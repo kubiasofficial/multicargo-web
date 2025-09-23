@@ -110,10 +110,23 @@ const handler = NextAuth({
     }
   },
   pages: {
-    signIn: '/'
+    signIn: '/',
+    signOut: '/',
+    error: '/', // Error code passed in query string as ?error=
+    verifyRequest: '/', // (used for check email message)
+    newUser: '/dashboard' // New users will be directed here on first sign in
   },
   session: {
-    strategy: 'jwt'
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  events: {
+    async signIn(message) {
+      console.log('[NextAuth Event] Sign in:', message.user.email);
+    },
+    async session(message) {
+      console.log('[NextAuth Event] Session:', message.session.user?.email);
+    }
   },
   logger: {
     error(code, metadata) {
