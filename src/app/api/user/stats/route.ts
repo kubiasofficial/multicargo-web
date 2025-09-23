@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+interface UserStats {
+  totalRides: number;
+  completedRides: number;
+  activeRides: number;
+  points: number;
+  level: number;
+  streak: number;
+  lastActiveDate: string | null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -17,7 +27,7 @@ export async function GET(request: NextRequest) {
     const dataDir = path.join(process.cwd(), 'data');
     const userStatsFile = path.join(dataDir, `user-stats-${userId}.json`);
 
-    let userStats = {
+    let userStats: UserStats = {
       totalRides: 0,
       completedRides: 0,
       activeRides: 0,
@@ -34,7 +44,7 @@ export async function GET(request: NextRequest) {
       // Try to read existing stats
       const statsData = await fs.readFile(userStatsFile, 'utf-8');
       userStats = JSON.parse(statsData);
-    } catch (error) {
+    } catch {
       // File doesn't exist or is invalid, use defaults
       console.log(`Creating new stats file for user ${userId}`);
     }
@@ -87,7 +97,7 @@ export async function POST(request: NextRequest) {
     // Ensure data directory exists
     await fs.mkdir(dataDir, { recursive: true });
 
-    let userStats = {
+    let userStats: UserStats = {
       totalRides: 0,
       completedRides: 0,
       activeRides: 0,
@@ -100,7 +110,7 @@ export async function POST(request: NextRequest) {
     try {
       const statsData = await fs.readFile(userStatsFile, 'utf-8');
       userStats = JSON.parse(statsData);
-    } catch (error) {
+    } catch {
       // File doesn't exist, use defaults
     }
 

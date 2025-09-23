@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+interface UserStats {
+  totalRides: number;
+  completedRides: number;
+  activeRides: number;
+  points: number;
+  level: number;
+  streak: number;
+  lastActiveDate: string | null;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await request.json();
@@ -15,7 +25,7 @@ export async function POST(request: NextRequest) {
     const userStatsFile = path.join(dataDir, `user-stats-${userId}.json`);
 
     // Reset to default stats
-    const defaultStats = {
+    const defaultStats: UserStats = {
       totalRides: 0,
       completedRides: 0,
       activeRides: 0,
