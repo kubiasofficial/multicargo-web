@@ -5,10 +5,28 @@ export interface TrainImageMapping {
   [key: string]: string;
 }
 
+export interface TrainDetails {
+  name: string;
+  image: string;
+  railwayUndertaking: string;
+  locoNumber: string;
+  uicNumber?: string;
+  interior?: string;
+  radioDevice?: string;
+  registrations: string;
+  luaSpawncode: string[];
+  description: string;
+}
+
+export interface TrainDetailsMapping {
+  [key: string]: TrainDetails;
+}
+
 // Main locomotive images mapping
 export const trainImages: TrainImageMapping = {
   // EU07/EP07 Series (4E)
   'EU07': 'https://wiki.simrail.eu/vehicle/eu07-005.jpg',
+  'EU07-005': 'https://wiki.simrail.eu/vehicle/eu07-005.jpg',
   'EP07': 'https://wiki.simrail.eu/vehicle/eu07-005.jpg',
   '4E': 'https://wiki.simrail.eu/vehicle/eu07-005.jpg',
   
@@ -47,6 +65,22 @@ export const trainImages: TrainImageMapping = {
   // Ty2 BR 52 (Steam)
   'Ty2': 'https://wiki.simrail.eu/vehicle/poland/trains/steam/ty2/ty2_main.jpg',
   'BR52': 'https://wiki.simrail.eu/vehicle/poland/trains/steam/ty2/ty2_main.jpg',
+};
+
+// Detailed train information database
+export const trainDetails: TrainDetailsMapping = {
+  'EU07-005': {
+    name: 'EU07-005',
+    image: 'https://wiki.simrail.eu/vehicle/eu07-005.jpg',
+    railwayUndertaking: 'PKP Intercity',
+    locoNumber: 'EU07-005',
+    uicNumber: '91 51 5 140 176-6 PL-PKPIC',
+    interior: 'white cabin',
+    radioDevice: 'old radio device',
+    registrations: 'PL',
+    luaSpawncode: ['4E/EU07-005', 'LocomotiveNames.EU07_005'],
+    description: 'Elektrická lokomotiva pro osobní a nákladní dopravu'
+  }
 };
 
 // Fallback images for unknown train types
@@ -100,7 +134,7 @@ function extractLocomotiveType(trainNumber: string): string | null {
   
   // Common patterns for locomotive identification
   const patterns = [
-    /^(EU07|EP07|EP08|ET22|ET25|EU43|ED250|EN57|EN71|EN76|EN96|Ty2)/i,
+    /^(EU07-005|EU07|EP07|EP08|ET22|ET25|EU43|ED250|EN57|EN71|EN76|EN96|Ty2)/i,
     /^(4E|102E|201E|E6ACTa|E186)/i,
   ];
   
@@ -115,12 +149,34 @@ function extractLocomotiveType(trainNumber: string): string | null {
 }
 
 /**
+ * Get detailed train information
+ * @param trainNumber - Train number (e.g., "EU07-005")
+ * @returns Detailed train information or null if not found
+ */
+export function getTrainDetails(trainNumber: string): TrainDetails | null {
+  // Check for exact match first
+  if (trainDetails[trainNumber]) {
+    return trainDetails[trainNumber];
+  }
+  
+  // Check for partial matches
+  for (const [key, details] of Object.entries(trainDetails)) {
+    if (trainNumber.includes(key) || details.luaSpawncode.some(code => code.includes(trainNumber))) {
+      return details;
+    }
+  }
+  
+  return null;
+}
+
+/**
  * Get train type description
  * @param trainType - Train type
  * @returns Human readable description
  */
 export function getTrainTypeDescription(trainType: string): string {
   const descriptions: { [key: string]: string } = {
+    'EU07-005': 'PKP Intercity EU07-005 - Elektrická lokomotiva s bílou kabinou a starým rádiem',
     'EU07': 'Elektrická lokomotiva pro osobní a nákladní dopravu',
     'EP07': 'Elektrická lokomotiva pro rychlé osobní vlaky', 
     'EP08': 'Elektrická lokomotiva pro rychlé osobní vlaky (140 km/h)',
@@ -140,7 +196,9 @@ export function getTrainTypeDescription(trainType: string): string {
 
 export default {
   trainImages,
+  trainDetails,
   fallbackImages,
   getTrainImage,
+  getTrainDetails,
   getTrainTypeDescription
 };
