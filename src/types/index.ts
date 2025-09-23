@@ -54,6 +54,7 @@ export interface SimRailTrain {
   distanceToSignalInFront?: number;
   lat?: number;
   lng?: number;
+  vehicles?: string[];
   timetable?: SimRailTimetableEntry[];
 }
 

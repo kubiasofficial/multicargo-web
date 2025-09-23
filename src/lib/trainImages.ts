@@ -330,11 +330,59 @@ export function getTrainDetails(trainNumber: string): TrainDetails | null {
 }
 
 /**
- * Get train type description
- * @param trainType - Train type
+ * Get train type description based on vehicles data and train info
+ * @param trainNumber - Train number
+ * @param trainType - Train type (optional)
+ * @param vehicles - Array of vehicle identifiers from SimRail API (optional)
  * @returns Human readable description
  */
-export function getTrainTypeDescription(trainType: string): string {
+export function getTrainTypeDescription(trainNumber: string, trainType?: string, vehicles?: string[]): string {
+  // If we have vehicles data, use it to determine the train type more accurately
+  if (vehicles && vehicles.length > 0) {
+    const firstVehicle = vehicles[0].toLowerCase();
+    
+    // Locomotive types based on SimRail vehicle data
+    if (firstVehicle.includes('ep08') || firstVehicle.includes('ep07')) {
+      return `Osobní vlak s lokomotivou ${vehicles[0].split('/')[1]?.split(':')[0] || 'EP'}`;
+    }
+    if (firstVehicle.includes('eu07') || firstVehicle.includes('et22') || firstVehicle.includes('et25')) {
+      return `Nákladní vlak s lokomotivou ${vehicles[0].split('/')[1]?.split(':')[0] || 'EU/ET'}`;
+    }
+    if (firstVehicle.includes('e186') || firstVehicle.includes('traxx')) {
+      return `Nákladní vlak s lokomotivou Traxx ${vehicles[0].split('/')[1]?.split(':')[0] || 'E186'}`;
+    }
+    if (firstVehicle.includes('dragon') || firstVehicle.includes('e6act')) {
+      return `Nákladní vlak s lokomotivou Dragon ${vehicles[0].split('/')[1]?.split(':')[0] || 'E6ACT'}`;
+    }
+    
+    // Electric multiple units
+    if (firstVehicle.includes('en57') || firstVehicle.includes('en71')) {
+      return `Regionální vlak s jednotkou ${vehicles[0].split('/')[1] || 'EN57/71'}`;
+    }
+    if (firstVehicle.includes('en76')) {
+      return `Příměstský vlak s jednotkou ${vehicles[0].split('/')[1] || 'EN76'}`;
+    }
+    
+    // Determine by cargo type if it's a freight train
+    const hasContainers = vehicles.some(v => v.includes('container') || v.includes('629z') || v.includes('434z'));
+    const hasTanks = vehicles.some(v => v.includes('406ra') || v.includes('oil') || v.includes('petrol'));
+    const hasWoodBeam = vehicles.some(v => v.includes('wooden_beam') || v.includes('424z'));
+    const hasBallast = vehicles.some(v => v.includes('ballast') || v.includes('412w'));
+    
+    if (hasContainers) {
+      return `Kontejnerový vlak s lokomotivou ${vehicles[0].split('/')[1]?.split(':')[0] || ''}`;
+    }
+    if (hasTanks) {
+      return `Cisternový vlak s lokomotivou ${vehicles[0].split('/')[1]?.split(':')[0] || ''}`;
+    }
+    if (hasWoodBeam) {
+      return `Nákladní vlak (dřevo) s lokomotivou ${vehicles[0].split('/')[1]?.split(':')[0] || ''}`;
+    }
+    if (hasBallast) {
+      return `Nákladní vlak (štěrk) s lokomotivou ${vehicles[0].split('/')[1]?.split(':')[0] || ''}`;
+    }
+  }
+
   const descriptions: { [key: string]: string } = {
     // Specific locomotive variants
     'EU07-005': 'PKP Intercity EU07-005 - Elektrická lokomotiva s bílou kabinou a starým rádiem',
@@ -374,19 +422,19 @@ export function getTrainTypeDescription(trainType: string): string {
   };
   
   // Check exact match first
-  if (descriptions[trainType]) {
-    return descriptions[trainType];
+  if (descriptions[trainNumber]) {
+    return descriptions[trainNumber];
   }
   
   // Extract locomotive type and find description
-  const extractedType = extractLocomotiveType(trainType);
+  const extractedType = extractLocomotiveType(trainNumber);
   if (extractedType && descriptions[extractedType]) {
     return descriptions[extractedType];
   }
   
   // For numerical train numbers, provide general description based on number range
-  if (/^\d+$/.test(trainType)) {
-    const trainNum = parseInt(trainType);
+  if (/^\d+$/.test(trainNumber)) {
+    const trainNum = parseInt(trainNumber);
     
     // Different train categories by number ranges (based on Polish classification)
     if (trainNum >= 50000 && trainNum <= 59999) {
@@ -397,19 +445,52 @@ export function getTrainTypeDescription(trainType: string): string {
       return 'Regionální rychlík (kategorie REG) - Rychlejší regionální spojení';
     } else if (trainNum >= 1000 && trainNum <= 9999) {
       return 'Express vlak (kategorie EX/IC) - Rychlé spojení mezi hlavními stanicemi';
+    } else if (trainNum >= 10000 && trainNum <= 19999) {
+      return 'Regionální vlak (kategorie R) - Spojení mezi regionálními centry';
+    } else if (trainNum >= 40000 && trainNum <= 49999) {
+      return 'Příměstský vlak (kategorie S) - Městská a příměstská doprava';
+    } else if (trainNum >= 60000 && trainNum <= 99999) {
+      return 'TLK vlak - Twoje Linie Kolejowe (rychlé dálkové spojení)';
+    } else if (trainNum >= 100000) {
+      return 'Nákladní vlak - Přeprava zboží a materiálů';
     } else {
       return 'Vlak polských železnic (PKP) - Elektrická nebo dieselová trakce';
     }
   }
   
+  // Use trainType if available
+  if (trainType) {
+    switch (trainType.toUpperCase()) {
+      case 'REGIONAL':
+      case 'R':
+        return 'Regionální vlak';
+      case 'EXPRESS':
+      case 'EC':
+      case 'IC':
+        return 'Expresní vlak';
+      case 'LOCAL':
+      case 'OS':
+        return 'Osobní vlak';
+      case 'FREIGHT':
+      case 'CARGO':
+        return 'Nákladní vlak';
+      case 'TLK':
+        return 'TLK (Twoje Linie Kolejowe)';
+      case 'EIC':
+        return 'EuroCity';
+      default:
+        return `${trainType} vlak`;
+    }
+  }
+  
   // Check if it contains any known locomotive prefix
   for (const [key, desc] of Object.entries(descriptions)) {
-    if (trainType.includes(key)) {
+    if (trainNumber.includes(key)) {
       return desc;
     }
   }
   
-  return 'Neznámý typ vozidla';
+  return 'Vlak';
 }
 
 export default {

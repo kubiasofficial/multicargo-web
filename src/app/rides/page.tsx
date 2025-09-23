@@ -471,7 +471,7 @@ export default function RidesPage() {
                             <div>
                               <h3 className="text-lg font-bold text-white">{train.trainNumber}</h3>
                               <p className="text-gray-300">{getFormattedRoute(train)}</p>
-                              <p className="text-sm text-gray-400">{getTrainTypeDescription(train.trainNumber) || 'Neznámý typ vozidla'}</p>
+                              <p className="text-sm text-gray-400">{getTrainTypeDescription(train.trainNumber, train.type, train.vehicles) || 'Neznámý typ vozidla'}</p>
                             </div>
                           </div>
 
