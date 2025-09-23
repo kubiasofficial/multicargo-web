@@ -45,56 +45,37 @@ export async function GET(request: NextRequest) {
         return !train.TrainData?.ControlledBySteamId;
       })
       .map((train: any) => {
-        console.log('Raw train data for', train.TrainNoLocal, ':', JSON.stringify({
-          TrainNoLocal: train.TrainNoLocal,
-          TrainName: train.TrainName,
-          StartStation: train.StartStation,
-          EndStation: train.EndStation,
-          TrainData: {
-            VDVCurrentStation: train.TrainData?.VDVCurrentStation,
-            CurrentStation: train.TrainData?.CurrentStation,
-            VDVNextStation: train.TrainData?.VDVNextStation,
-            NextStation: train.TrainData?.NextStation,
-            Velocity: train.TrainData?.Velocity,
-            InBorderStationArea: train.TrainData?.InBorderStationArea,
-            Latitude: train.TrainData?.Latitude,
-            Longitude: train.TrainData?.Longitude
-          },
-          TimeTable: train.TimeTable?.slice(0, 5) // Show first 5 timetable entries to see structure
-        }, null, 2));
+        console.log('=== Raw train data for', train.TrainNoLocal, '===');
+        console.log('Full train object keys:', Object.keys(train));
+        console.log('TrainData keys:', train.TrainData ? Object.keys(train.TrainData) : 'No TrainData');
+        console.log('TrainData object:', JSON.stringify(train.TrainData, null, 2));
+        console.log('TimeTable length:', train.TimeTable?.length || 0);
+        console.log('TimeTable first entry:', train.TimeTable?.[0] || 'No TimeTable');
+        console.log('==================');
         
-        // Filter valid timetable entries
-        const validTimetable = train.TimeTable?.filter((entry: any) => 
-          entry && Object.keys(entry).length > 0 && entry.stationName
-        ) || [];
-        
+        // Since trains API doesn't have timetable, we'll use GPS and train info only
         const transformed = {
           id: train.TrainNoLocal || train.id || `train-${Date.now()}-${Math.random()}`,
           trainNumber: train.TrainNoLocal || train.trainNumber || 'Unknown',
           trainName: train.TrainName || train.trainName || '',
-          startStation: train.StartStation || train.startStation || 'Unknown', // Original start station
-          endStation: train.EndStation || train.endStation || 'Unknown', // Original end station
-          // Real current position from TrainData, NOT start station
-          currentStation: train.TrainData?.VDVCurrentStation || 
-                         train.TrainData?.CurrentStation || 
-                         train.currentStation || 
-                         null, // Don't fallback to start station for real position
-          // Real next station from TrainData, NOT end station  
-          nextStation: train.TrainData?.VDVNextStation || 
-                      train.TrainData?.NextStation || 
-                      train.nextStation || 
-                      null, // Don't fallback to end station for real next
+          startStation: train.StartStation || train.startStation || 'Unknown',
+          endStation: train.EndStation || train.endStation || 'Unknown',
+          // We'll show GPS coordinates as current position
+          currentStation: train.TrainData?.Latititute && train.TrainData?.Longitute 
+            ? `${train.TrainData.Latititute.toFixed(4)}, ${train.TrainData.Longitute.toFixed(4)}`
+            : null,
+          nextStation: train.TrainData?.SignalInFront || null, // Show next signal as "next station"
           type: 'AVAILABLE',
           company: 'SimRail',
           speed: train.TrainData?.Velocity || train.speed || 0,
           maxSpeed: train.TrainData?.MaxVelocity || train.maxSpeed || 0,
-          signal: train.TrainData?.Signal || train.signal,
+          signal: train.TrainData?.SignalInFront || train.signal,
           distance: train.TrainData?.Distance || train.distance,
           distanceToSignalInFront: train.TrainData?.DistanceToSignalInFront || train.distanceToSignalInFront,
-          lat: train.TrainData?.Latitude || train.lat,
-          lng: train.TrainData?.Longitude || train.lng,
+          lat: train.TrainData?.Latititute || train.lat, // Note: API has typo 'Latititute'
+          lng: train.TrainData?.Longitute || train.lng,  // Note: API has typo 'Longitute'
           vehicles: train.Vehicles || [],
-          timetable: validTimetable, // Full timetable, not just first/last
+          timetable: [], // Empty - will be fetched separately
           serverCode: train.ServerCode || serverCode
         };
         
@@ -102,7 +83,10 @@ export async function GET(request: NextRequest) {
           trainNumber: transformed.trainNumber,
           currentStation: transformed.currentStation,
           nextStation: transformed.nextStation,
-          timetableLength: transformed.timetable.length
+          timetableLength: transformed.timetable.length,
+          speed: transformed.speed,
+          lat: transformed.lat,
+          lng: transformed.lng
         }, null, 2));
         return transformed;
       });
