@@ -18,6 +18,12 @@ export async function GET(request: NextRequest) {
   
   try {
     console.log('[CUSTOM-AUTH] Starting token exchange...');
+    console.log('[CUSTOM-AUTH] Environment check:', {
+      hasClientId: !!process.env.DISCORD_CLIENT_ID,
+      hasClientSecret: !!process.env.DISCORD_CLIENT_SECRET,
+      hasGuildId: !!process.env.DISCORD_GUILD_ID,
+      hasBotToken: !!process.env.DISCORD_BOT_TOKEN
+    });
     
     // Exchange code for token
     const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
@@ -30,7 +36,7 @@ export async function GET(request: NextRequest) {
         client_secret: process.env.DISCORD_CLIENT_SECRET!,
         grant_type: 'authorization_code',
         code: code,
-        redirect_uri: `${process.env.NEXTAUTH_URL}/api/custom-auth`,
+        redirect_uri: `${new URL(request.url).origin}/api/custom-auth`,
       }),
     });
     
