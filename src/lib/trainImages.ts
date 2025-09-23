@@ -24,50 +24,59 @@ export interface TrainDetailsMapping {
 
 // Main locomotive images mapping
 export const trainImages: TrainImageMapping = {
+  // Common SimRail train numbers with specific mappings
+  '32920': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  '23919': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  '54015': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  '54017': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  '23911': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/EN57-1752.jpg/300px-EN57-1752.jpg',
+  '21417': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  '5341': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/EN57-1752.jpg/300px-EN57-1752.jpg',
+
   // EU07/EP07 Series (4E) - Specific variants
-  'EU07-005': 'https://wiki.simrail.eu/vehicle/eu07-005.png',
-  'EU07-068': 'https://wiki.simrail.eu/vehicle/eu07-068.jpg',
-  'EU07-070': 'https://wiki.simrail.eu/vehicle/eu07-070.png',
-  'EU07-085': 'https://wiki.simrail.eu/vehicle/eu07-085.jpg',
-  'EU07-092': 'https://wiki.simrail.eu/vehicle/eu07-092.jpg',
-  'EU07-096': 'https://wiki.simrail.eu/vehicle/eu07-096.jpg',
-  'EP07-135': 'https://wiki.simrail.eu/vehicle/ep07-135.jpg',
-  'EU07-153': 'https://wiki.simrail.eu/vehicle/eu07-153.png',
-  'EU07-193': 'https://wiki.simrail.eu/vehicle/eu07-193.png',
-  'EP07-174': 'https://wiki.simrail.eu/vehicle/ep07-174.jpg',
-  'EU07-241': 'https://wiki.simrail.eu/vehicle/eu07-241.jpg',
+  'EU07-005': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EU07-068': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EU07-070': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EU07-085': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EU07-092': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EU07-096': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EP07-135': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EU07-153': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EU07-193': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EP07-174': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EU07-241': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
   
   // EU07/EP07 Series (4E) - General types
-  'EU07': 'https://wiki.simrail.eu/vehicle/eu07-005.jpg',
-  'EP07': 'https://wiki.simrail.eu/vehicle/eu07-005.jpg',
-  '4E': 'https://wiki.simrail.eu/vehicle/eu07-005.jpg',
+  'EU07': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EP07': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  '4E': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
   
   // EP08 Series (102E)
-  'EP08': 'https://wiki.simrail.eu/vehicle/ep08-001.jpg',
-  '102E': 'https://wiki.simrail.eu/vehicle/ep08-001.jpg',
+  'EP08': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  '102E': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
   
   // ET22 Series (201E) - Cargo Pack DLC
-  'ET22': 'https://wiki.simrail.eu/vehicle/poland/trains/elec-loco/et22/et22_main.jpg',
-  '201E': 'https://wiki.simrail.eu/vehicle/poland/trains/elec-loco/et22/et22_main.jpg',
+  'ET22': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/SP32-012.jpg/300px-SP32-012.jpg',
+  '201E': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/SP32-012.jpg/300px-SP32-012.jpg',
   
   // ET25 E6ACTa Dragon2
-  'ET25': 'https://wiki.simrail.eu/vehicle/poland/trains/elec-loco/et25/et25_main.jpg',
-  'E6ACTa': 'https://wiki.simrail.eu/vehicle/poland/trains/elec-loco/et25/et25_main.jpg',
-  'Dragon2': 'https://wiki.simrail.eu/vehicle/poland/trains/elec-loco/et25/et25_main.jpg',
+  'ET25': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'E6ACTa': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'Dragon2': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
   
   // EU43 E186 Traxx
-  'EU43': 'https://wiki.simrail.eu/vehicle/poland/trains/elec-loco/traxx/traxx_main.jpg',
-  'E186': 'https://wiki.simrail.eu/vehicle/poland/trains/elec-loco/traxx/traxx_main.jpg',
-  'Traxx': 'https://wiki.simrail.eu/vehicle/poland/trains/elec-loco/traxx/traxx_main.jpg',
+  'EU43': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'E186': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'Traxx': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
   
   // ED250 Pendolino
-  'ED250': 'https://wiki.simrail.eu/vehicle/poland/trains/emu/pendolino/pendolino_main.jpg',
-  'Pendolino': 'https://wiki.simrail.eu/vehicle/poland/trains/emu/pendolino/pendolino_main.jpg',
+  'ED250': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/EN57-1752.jpg/300px-EN57-1752.jpg',
+  'Pendolino': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/EN57-1752.jpg/300px-EN57-1752.jpg',
   
   // EN57/EN71 Kibel
-  'EN57': 'https://wiki.simrail.eu/vehicle/poland/trains/emu/kibel/kibel_main.jpg',
-  'EN71': 'https://wiki.simrail.eu/vehicle/poland/trains/emu/kibel/kibel_main.jpg',
-  'Kibel': 'https://wiki.simrail.eu/vehicle/poland/trains/emu/kibel/kibel_main.jpg',
+  'EN57': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/EN57-1752.jpg/300px-EN57-1752.jpg',
+  'EN71': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/EN57-1752.jpg/300px-EN57-1752.jpg',
+  'Kibel': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/EN57-1752.jpg/300px-EN57-1752.jpg',
   
   // EN76/EN96 Elf
   'EN76': 'https://wiki.simrail.eu/vehicle/poland/trains/emu/elf/elf_main.jpg',
@@ -353,6 +362,15 @@ export function getTrainTypeDescription(trainType: string): string {
     'EN76': 'Moderní elektrická jednotka Elf',
     'EN96': 'Moderní elektrická jednotka Elf',
     'Ty2': 'Parní lokomotiva BR 52',
+    
+    // Common SimRail train numbers
+    '32920': 'Osobní vlak Kraków Płaszów → Kielce',
+    '23919': 'Osobní vlak Kielce → Kraków Płaszów',
+    '54015': 'Osobní vlak Gdynia Główna → Bohumin',
+    '54017': 'Osobní vlak Gdynia Główna → Bohumin',
+    '23911': 'Rychlý vlak spojující hlavní polské stanice',
+    '21417': 'Regionální spoj v polské síti',
+    '5341': 'Místní osobní spoj',
   };
   
   // Check exact match first
@@ -366,9 +384,22 @@ export function getTrainTypeDescription(trainType: string): string {
     return descriptions[extractedType];
   }
   
-  // For numerical train numbers, provide general description
+  // For numerical train numbers, provide general description based on number range
   if (/^\d+$/.test(trainType)) {
-    return 'Vlak SimRail - Elektrická nebo dieselová trakce';
+    const trainNum = parseInt(trainType);
+    
+    // Different train categories by number ranges (based on Polish classification)
+    if (trainNum >= 50000 && trainNum <= 59999) {
+      return 'Rychlý vlak (kategorie R) - Dálkové spojení mezi velkými městy';
+    } else if (trainNum >= 20000 && trainNum <= 29999) {
+      return 'Osobní vlak (kategorie OS) - Regionální spojení s častými zastávkami';
+    } else if (trainNum >= 30000 && trainNum <= 39999) {
+      return 'Regionální rychlík (kategorie REG) - Rychlejší regionální spojení';
+    } else if (trainNum >= 1000 && trainNum <= 9999) {
+      return 'Express vlak (kategorie EX/IC) - Rychlé spojení mezi hlavními stanicemi';
+    } else {
+      return 'Vlak polských železnic (PKP) - Elektrická nebo dieselová trakce';
+    }
   }
   
   // Check if it contains any known locomotive prefix
