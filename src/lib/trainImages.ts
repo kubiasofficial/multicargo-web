@@ -34,21 +34,21 @@ export const trainImages: TrainImageMapping = {
   '5341': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/EN57-1752.jpg/300px-EN57-1752.jpg',
 
   // EU07/EP07 Series (4E) - Specific variants
-  'EU07-005': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
-  'EU07-068': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
-  'EU07-070': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
-  'EU07-085': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
-  'EU07-092': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
-  'EU07-096': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
-  'EP07-135': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
-  'EU07-153': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
-  'EU07-193': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
-  'EP07-174': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
-  'EU07-241': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EU07-005': '/images/trains/eu07-005.jpg',
+  'EU07-068': '/images/trains/eu07-068.jpg',
+  'EU07-070': '/images/trains/eu07-070.png',
+  'EU07-085': '/images/trains/eu07-085.jpg',
+  'EU07-092': '/images/trains/eu07-092.jpg',
+  'EU07-096': '/images/trains/eu07-096.jpg',
+  'EP07-135': '/images/trains/ep07-135.jpg',
+  'EU07-153': '/images/trains/eu07-153.png',
+  'EU07-193': '/images/trains/eu07-193.png',
+  'EP07-174': '/images/trains/ep07-174.jpg',
+  'EU07-241': '/images/trains/eu07-241.jpg',
   
   // EU07/EP07 Series (4E) - General types
-  'EU07': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
-  'EP07': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  'EU07': '/images/trains/eu07-005.jpg',
+  'EP07': '/images/trains/ep07-174.jpg',
   '4E': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
   
   // EP08 Series (102E)
@@ -226,7 +226,7 @@ export const trainDetails: TrainDetailsMapping = {
 
 // Fallback images for unknown train types
 export const fallbackImages = {
-  electric: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/PKP_EU07-005.jpg/300px-PKP_EU07-005.jpg',
+  electric: '/images/trains/eu07-005.jpg',
   emu: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/EN57-1752.jpg/300px-EN57-1752.jpg', 
   steam: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/TKt48-191_locomotive.jpg/300px-TKt48-191_locomotive.jpg',
   diesel: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/SP32-012.jpg/300px-SP32-012.jpg',
