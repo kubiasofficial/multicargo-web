@@ -44,26 +44,34 @@ export async function GET(request: NextRequest) {
         // Only include trains that are not controlled by players (available for taking)
         return !train.TrainData?.ControlledBySteamId;
       })
-      .map((train: any) => ({
-        id: train.TrainNoLocal || train.id || `train-${Date.now()}-${Math.random()}`,
-        trainNumber: train.TrainNoLocal || train.trainNumber || 'Unknown',
-        trainName: train.TrainName || train.trainName || '',
-        startStation: train.StartStation || train.startStation || 'Unknown',
-        endStation: train.EndStation || train.endStation || 'Unknown',
-        currentStation: train.TrainData?.CurrentStation || train.currentStation,
-        nextStation: train.TrainData?.NextStation || train.nextStation,
-        type: 'AVAILABLE',
-        company: 'SimRail',
-        speed: train.TrainData?.Velocity || train.speed || 0,
-        maxSpeed: train.TrainData?.MaxVelocity || train.maxSpeed || 0,
-        signal: train.TrainData?.Signal || train.signal,
-        distance: train.TrainData?.Distance || train.distance,
-        distanceToSignalInFront: train.TrainData?.DistanceToSignalInFront || train.distanceToSignalInFront,
-        lat: train.TrainData?.Latitude || train.lat,
-        lng: train.TrainData?.Longitude || train.lng,
-        vehicles: train.Vehicles || [],
-        serverCode: train.ServerCode || serverCode
-      }));
+      .map((train: any) => {
+        console.log('Raw train data:', JSON.stringify(train, null, 2));
+        
+        const transformed = {
+          id: train.TrainNoLocal || train.id || `train-${Date.now()}-${Math.random()}`,
+          trainNumber: train.TrainNoLocal || train.trainNumber || 'Unknown',
+          trainName: train.TrainName || train.trainName || '',
+          startStation: train.StartStation || train.startStation || 'Unknown',
+          endStation: train.EndStation || train.endStation || 'Unknown',
+          currentStation: train.TrainData?.VDVCurrentStation || train.TrainData?.CurrentStation || train.currentStation || 'Neznámá stanice',
+          nextStation: train.TrainData?.VDVNextStation || train.TrainData?.NextStation || train.nextStation || 'Neznámá stanice',
+          type: 'AVAILABLE',
+          company: 'SimRail',
+          speed: train.TrainData?.Velocity || train.speed || 0,
+          maxSpeed: train.TrainData?.MaxVelocity || train.maxSpeed || 0,
+          signal: train.TrainData?.Signal || train.signal,
+          distance: train.TrainData?.Distance || train.distance,
+          distanceToSignalInFront: train.TrainData?.DistanceToSignalInFront || train.distanceToSignalInFront,
+          lat: train.TrainData?.Latitude || train.lat,
+          lng: train.TrainData?.Longitude || train.lng,
+          vehicles: train.Vehicles || [],
+          timetable: train.TimeTable || [], // Include timetable from API
+          serverCode: train.ServerCode || serverCode
+        };
+        
+        console.log('Transformed train:', JSON.stringify(transformed, null, 2));
+        return transformed;
+      });
 
     console.log('Transformed data:', transformedData);
 

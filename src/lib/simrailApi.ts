@@ -57,7 +57,8 @@ export async function fetchAvailableTrains(): Promise<SimRailTrain[]> {
         distance: train.distance,
         distanceToSignalInFront: train.distanceToSignalInFront,
         lat: train.lat,
-        lng: train.lng
+        lng: train.lng,
+        timetable: train.timetable || [] // Include timetable from API
       };
     });
     
