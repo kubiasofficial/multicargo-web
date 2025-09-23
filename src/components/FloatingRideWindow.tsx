@@ -323,9 +323,26 @@ export default function FloatingRideWindow({
                   <div className="p-6 text-center">
                     <ExclamationTriangleIcon className="h-8 w-8 text-gray-500 mx-auto mb-2" />
                     <p className="text-gray-400 text-sm mb-2">Jízdní řád není dostupný</p>
-                    <p className="text-gray-500 text-xs">
+                    <p className="text-gray-500 text-xs mb-3">
                       Zobrazuji pouze základní informace o trase: {activeRide.route}
                     </p>
+                    {/* Show basic route info as fallback */}
+                    <div className="text-left bg-gray-600/30 rounded p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 rounded-full bg-green-400" />
+                          <span className="text-sm text-gray-300">{activeRide.startStation}</span>
+                        </div>
+                        <span className="text-xs text-gray-500">Výchozí</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 rounded-full bg-blue-400" />
+                          <span className="text-sm text-gray-300">{activeRide.endStation}</span>
+                        </div>
+                        <span className="text-xs text-gray-500">Cílová</span>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

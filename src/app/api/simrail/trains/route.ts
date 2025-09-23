@@ -45,7 +45,14 @@ export async function GET(request: NextRequest) {
         return !train.TrainData?.ControlledBySteamId;
       })
       .map((train: any) => {
-        console.log('Raw train data:', JSON.stringify(train, null, 2));
+        console.log('Raw train data for', train.TrainNoLocal, ':', JSON.stringify({
+          TrainNoLocal: train.TrainNoLocal,
+          TrainName: train.TrainName,
+          StartStation: train.StartStation,
+          EndStation: train.EndStation,
+          TrainData: train.TrainData,
+          TimeTable: train.TimeTable?.slice(0, 3) // Show only first 3 timetable entries
+        }, null, 2));
         
         const transformed = {
           id: train.TrainNoLocal || train.id || `train-${Date.now()}-${Math.random()}`,
@@ -65,11 +72,16 @@ export async function GET(request: NextRequest) {
           lat: train.TrainData?.Latitude || train.lat,
           lng: train.TrainData?.Longitude || train.lng,
           vehicles: train.Vehicles || [],
-          timetable: train.TimeTable || [], // Include timetable from API
+          timetable: train.TimeTable?.filter((entry: any) => entry && Object.keys(entry).length > 0) || [], // Filter out empty objects
           serverCode: train.ServerCode || serverCode
         };
         
-        console.log('Transformed train:', JSON.stringify(transformed, null, 2));
+        console.log('Transformed train for', train.TrainNoLocal, ':', JSON.stringify({
+          trainNumber: transformed.trainNumber,
+          currentStation: transformed.currentStation,
+          nextStation: transformed.nextStation,
+          timetableLength: transformed.timetable.length
+        }, null, 2));
         return transformed;
       });
 
