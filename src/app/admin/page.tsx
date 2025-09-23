@@ -128,20 +128,20 @@ export default function AdminPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-400"></div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-white mb-4">
             Přístup zamítnut
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-300">
             Přihlaste se pro přístup k admin panelu.
           </p>
         </div>
@@ -151,13 +151,13 @@ export default function AdminPage() {
 
   if (!isAdmin(user.roles as any)) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <ExclamationTriangleIcon className="h-16 w-16 text-red-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-4">
             Nedostatečná oprávnění
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-300">
             Pro přístup k admin panelu potřebujete admin roli.
           </p>
         </div>
@@ -167,22 +167,22 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-400"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+          <h1 className="text-3xl font-bold text-white flex items-center">
             <CogIcon className="h-8 w-8 mr-3" />
             Administrace
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-300 mt-2">
             Správa uživatelů, jízd a systémových nastavení
           </p>
         </div>
@@ -190,50 +190,50 @@ export default function AdminPage() {
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <UsersIcon className="h-8 w-8 text-blue-500" />
+                  <UsersIcon className="h-8 w-8 text-blue-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Celkem uživatelů</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                  <p className="text-sm font-medium text-gray-400">Celkem uživatelů</p>
+                  <p className="text-2xl font-bold text-white">{stats.totalUsers}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <TruckIcon className="h-8 w-8 text-green-500" />
+                  <TruckIcon className="h-8 w-8 text-green-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Aktivní jízdy</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.activeRides}</p>
+                  <p className="text-sm font-medium text-gray-400">Aktivní jízdy</p>
+                  <p className="text-2xl font-bold text-white">{stats.activeRides}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <CheckCircleIcon className="h-8 w-8 text-purple-500" />
+                  <CheckCircleIcon className="h-8 w-8 text-purple-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Dokončeno dnes</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.completedToday}</p>
+                  <p className="text-sm font-medium text-gray-400">Dokončeno dnes</p>
+                  <p className="text-2xl font-bold text-white">{stats.completedToday}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <ClockIcon className="h-8 w-8 text-orange-500" />
+                  <ClockIcon className="h-8 w-8 text-orange-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Čekající přiřazení</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.pendingAssignments}</p>
+                  <p className="text-sm font-medium text-gray-400">Čekající přiřazení</p>
+                  <p className="text-2xl font-bold text-white">{stats.pendingAssignments}</p>
                 </div>
               </div>
             </div>
@@ -242,32 +242,32 @@ export default function AdminPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Users Management */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">Správa uživatelů</h2>
+          <div className="bg-gray-800 border border-gray-700 rounded-lg shadow">
+            <div className="p-6 border-b border-gray-700">
+              <h2 className="text-lg font-medium text-white">Správa uživatelů</h2>
             </div>
             <div className="p-6">
               <div className="space-y-4">
                 {users.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                  <div key={user.id} className="flex items-center justify-between p-4 border border-gray-600 rounded-lg bg-gray-750">
                     <div>
-                      <div className="font-medium">{user.username}#{user.discriminator}</div>
-                      <div className="text-sm text-gray-500">
+                      <div className="font-medium text-white">{user.username}#{user.discriminator}</div>
+                      <div className="text-sm text-gray-300">
                         {user.roles.map(role => (
                           <span key={role} className={`inline-block mr-2 ${getRoleColor(role)}`}>
                             {getRoleDisplayName(role)}
                           </span>
                         ))}
                       </div>
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-gray-500">
                         Poslední přihlášení: {user.lastLogin.toLocaleDateString('cs-CZ')}
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <button className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                      <button className="px-3 py-1 text-sm bg-blue-900 text-blue-200 rounded hover:bg-blue-800">
                         Upravit
                       </button>
-                      <button className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200">
+                      <button className="px-3 py-1 text-sm bg-red-900 text-red-200 rounded hover:bg-red-800">
                         Blokovat
                       </button>
                     </div>
@@ -278,17 +278,17 @@ export default function AdminPage() {
           </div>
 
           {/* Rides Management */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">Správa jízd</h2>
+          <div className="bg-gray-800 border border-gray-700 rounded-lg shadow">
+            <div className="p-6 border-b border-gray-700">
+              <h2 className="text-lg font-medium text-white">Správa jízd</h2>
             </div>
             <div className="p-6">
               <div className="space-y-4">
                 {rides.map((ride) => (
-                  <div key={ride.id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={ride.id} className="border border-gray-600 rounded-lg p-4 bg-gray-750">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
-                        <span className="font-bold">{ride.trainNumber}</span>
+                        <span className="font-bold text-white">{ride.trainNumber}</span>
                         <span className={`px-2 py-1 text-xs rounded ${getPriorityColor(ride.priority)}`}>
                           {ride.priority}
                         </span>
@@ -298,20 +298,20 @@ export default function AdminPage() {
                       </span>
                     </div>
                     
-                    <div className="text-sm text-gray-600 mb-2">{ride.route}</div>
+                    <div className="text-sm text-gray-300 mb-2">{ride.route}</div>
                     
                     <div className="text-xs text-gray-500">
                       {ride.departure.time.toLocaleString('cs-CZ')} - {ride.arrival.time.toLocaleString('cs-CZ')}
                     </div>
                     
                     <div className="flex space-x-2 mt-3">
-                      <button className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200">
+                      <button className="px-2 py-1 text-xs bg-green-900 text-green-200 rounded hover:bg-green-800">
                         Přiřadit
                       </button>
-                      <button className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                      <button className="px-2 py-1 text-xs bg-blue-900 text-blue-200 rounded hover:bg-blue-800">
                         Upravit
                       </button>
-                      <button className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200">
+                      <button className="px-2 py-1 text-xs bg-red-900 text-red-200 rounded hover:bg-red-800">
                         Zrušit
                       </button>
                     </div>
