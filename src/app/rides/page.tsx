@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useActiveRide } from '@/contexts/ActiveRideContext';
 import { useState, useEffect } from 'react';
 import { 
   TruckIcon,
@@ -27,6 +28,7 @@ interface RideFilters {
 
 export default function RidesPage() {
   const { user, loading: authLoading } = useAuth();
+  const { activeRide, startRide } = useActiveRide();
   const [rides, setRides] = useState<Ride[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewRideModal, setShowNewRideModal] = useState(false);
@@ -139,15 +141,20 @@ export default function RidesPage() {
 
   const handleTakeRide = async (train: SimRailTrain) => {
     try {
-      // TODO: Implement actual ride assignment logic
-      console.log('Taking ride for train:', train.trainNumber);
+      if (activeRide) {
+        alert('Již máte aktivní jízdu! Ukončete ji před začátkem nové.');
+        return;
+      }
+
+      await startRide(train);
       setShowNewRideModal(false);
       
-      // Create new active ride
-      // This will be implemented with Firebase
+      // Show success message
+      alert(`Úspěšně jste převzal jízdu vlaku ${train.trainNumber}!`);
       
     } catch (error) {
       console.error('Error taking ride:', error);
+      alert('Chyba při převzetí jízdy. Zkuste to prosím znovu.');
     }
   };
 
@@ -225,10 +232,15 @@ export default function RidesPage() {
             {(user.roles.some(role => ['STROJVEDOUCÍ', 'ADMIN'].includes(role))) && (
               <button 
                 onClick={handleNewRide}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 shadow-lg shadow-indigo-500/20"
+                disabled={!!activeRide}
+                className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 shadow-lg ${
+                  activeRide 
+                    ? 'bg-gray-600 text-gray-400 cursor-not-allowed shadow-gray-500/20' 
+                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20'
+                }`}
               >
                 <PlusIcon className="h-5 w-5" />
-                <span>Nová jízda</span>
+                <span>{activeRide ? 'Aktivní jízda probíhá' : 'Nová jízda'}</span>
               </button>
             )}
           </div>

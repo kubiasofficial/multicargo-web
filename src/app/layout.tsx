@@ -2,7 +2,9 @@
 
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ActiveRideProvider } from '@/contexts/ActiveRideContext';
 import Navbar from '@/components/Navbar';
+import FloatingRideWrapper from '@/components/FloatingRideWrapper';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,8 +28,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <Navbar />
-          {children}
+          <ActiveRideProvider>
+            <Navbar />
+            {children}
+            <FloatingRideWrapper />
+          </ActiveRideProvider>
         </AuthProvider>
       </body>
     </html>
