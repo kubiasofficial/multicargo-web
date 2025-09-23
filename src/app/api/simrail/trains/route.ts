@@ -50,8 +50,17 @@ export async function GET(request: NextRequest) {
           TrainName: train.TrainName,
           StartStation: train.StartStation,
           EndStation: train.EndStation,
-          TrainData: train.TrainData,
-          TimeTable: train.TimeTable?.slice(0, 3) // Show only first 3 timetable entries
+          TrainData: {
+            VDVCurrentStation: train.TrainData?.VDVCurrentStation,
+            CurrentStation: train.TrainData?.CurrentStation,
+            VDVNextStation: train.TrainData?.VDVNextStation,
+            NextStation: train.TrainData?.NextStation,
+            Velocity: train.TrainData?.Velocity,
+            InBorderStationArea: train.TrainData?.InBorderStationArea,
+            Latitude: train.TrainData?.Latitude,
+            Longitude: train.TrainData?.Longitude
+          },
+          TimeTable: train.TimeTable?.slice(0, 5) // Show first 5 timetable entries to see structure
         }, null, 2));
         
         // Filter valid timetable entries
@@ -59,28 +68,22 @@ export async function GET(request: NextRequest) {
           entry && Object.keys(entry).length > 0 && entry.stationName
         ) || [];
         
-        // Get stations from timetable if available
-        const firstTimetableStation = validTimetable[0]?.stationName;
-        const lastTimetableStation = validTimetable[validTimetable.length - 1]?.stationName;
-        
         const transformed = {
           id: train.TrainNoLocal || train.id || `train-${Date.now()}-${Math.random()}`,
           trainNumber: train.TrainNoLocal || train.trainNumber || 'Unknown',
           trainName: train.TrainName || train.trainName || '',
-          startStation: firstTimetableStation || train.StartStation || train.startStation || 'Unknown',
-          endStation: lastTimetableStation || train.EndStation || train.endStation || 'Unknown',
+          startStation: train.StartStation || train.startStation || 'Unknown', // Original start station
+          endStation: train.EndStation || train.endStation || 'Unknown', // Original end station
+          // Real current position from TrainData, NOT start station
           currentStation: train.TrainData?.VDVCurrentStation || 
                          train.TrainData?.CurrentStation || 
                          train.currentStation || 
-                         firstTimetableStation ||
-                         train.StartStation || // Fallback to start station
-                         'Výchozí stanice',
+                         null, // Don't fallback to start station for real position
+          // Real next station from TrainData, NOT end station  
           nextStation: train.TrainData?.VDVNextStation || 
                       train.TrainData?.NextStation || 
                       train.nextStation || 
-                      lastTimetableStation ||
-                      train.EndStation || // Fallback to end station
-                      'Cílová stanice',
+                      null, // Don't fallback to end station for real next
           type: 'AVAILABLE',
           company: 'SimRail',
           speed: train.TrainData?.Velocity || train.speed || 0,
@@ -91,7 +94,7 @@ export async function GET(request: NextRequest) {
           lat: train.TrainData?.Latitude || train.lat,
           lng: train.TrainData?.Longitude || train.lng,
           vehicles: train.Vehicles || [],
-          timetable: validTimetable,
+          timetable: validTimetable, // Full timetable, not just first/last
           serverCode: train.ServerCode || serverCode
         };
         

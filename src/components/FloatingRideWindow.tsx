@@ -192,7 +192,7 @@ export default function FloatingRideWindow({
                   <span className="text-sm">Aktuální pozice</span>
                 </div>
                 <p className="text-white font-medium text-sm">
-                  {activeRide.currentStation || realTimeData.currentStation || 'Neznámá'}
+                  {activeRide.currentStation || realTimeData.currentStation || 'Pozice neznámá'}
                 </p>
               </div>
 
@@ -202,7 +202,7 @@ export default function FloatingRideWindow({
                   <span className="text-sm">Další stanice</span>
                 </div>
                 <p className="text-white font-medium text-sm">
-                  {activeRide.nextStation || realTimeData.nextStation || 'Neznámá'}
+                  {activeRide.nextStation || realTimeData.nextStation || 'Další stanice neznámá'}
                 </p>
               </div>
 
@@ -356,7 +356,7 @@ export default function FloatingRideWindow({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white font-medium">{activeRide.trainNumber}</p>
-                <p className="text-gray-400 text-sm">{activeRide.currentStation || realTimeData.currentStation || 'Neznámá stanice'}</p>
+                <p className="text-gray-400 text-sm">{activeRide.currentStation || realTimeData.currentStation || 'Pozice neznámá'}</p>
               </div>
               <div className="text-right">
                 <p className="text-white text-sm">{getJourneyDuration()}</p>
