@@ -72,7 +72,7 @@ export function ActiveRideProvider({ children }: { children: ReactNode }) {
       startStation: train.startStation,
       endStation: train.endStation,
       userId: user.id,
-      userName: user.displayName || user.username,
+      userName: user.username,
       startTime: new Date(),
       currentStation: train.currentStation,
       nextStation: train.nextStation,
