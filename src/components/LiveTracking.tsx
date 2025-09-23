@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useActiveRide } from '@/contexts/ActiveRideContext';
 import { 
   MapPinIcon, 
   ClockIcon, 
@@ -8,9 +9,9 @@ import {
   ExclamationTriangleIcon 
 } from '@heroicons/react/24/outline';
 import { LiveTrackingData } from '@/types';
-import { createProgressBar, formatDuration } from '@/lib/auth';
 
 export default function LiveTracking() {
+  const { activeRide } = useActiveRide();
   const [trackingData, setTrackingData] = useState<LiveTrackingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
@@ -18,37 +19,35 @@ export default function LiveTracking() {
   useEffect(() => {
     fetchLiveData();
     
-    // Update every 30 seconds (real Discord bot updates every 5 minutes)
+    // Update every 30 seconds 
     const interval = setInterval(fetchLiveData, 30000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [activeRide]); // Update when activeRide changes
 
   const fetchLiveData = async () => {
     try {
-      // Simulate live tracking data - replace with actual Firebase real-time listener
-      const mockData: LiveTrackingData[] = [
-        {
-          rideId: '1',
-          userId: 'user1',
-          currentLocation: {
-            latitude: 49.2,
-            longitude: 16.6,
-            station: 'Brno-Královo Pole'
-          },
-          progress: {
-            current: 65,
-            total: 100,
-            percentage: 65
-          },
-          estimatedArrival: new Date(Date.now() + 45 * 60000), // 45 minutes from now
-          actualDeparture: new Date(Date.now() - 90 * 60000), // 90 minutes ago
-          delays: 5, // 5 minutes delay
-          lastUpdate: new Date()
-        }
-      ];
+      // Use active ride data if available, otherwise show empty
+      const liveData: LiveTrackingData[] = activeRide ? [{
+        rideId: activeRide.id,
+        userId: activeRide.userId,
+        currentLocation: {
+          latitude: 49.2, // TODO: Get from SimRail API
+          longitude: 16.6,
+          station: activeRide.currentStation || 'Neznámá stanice'
+        },
+        progress: {
+          current: activeRide.progress || 0,
+          total: 100,
+          percentage: activeRide.progress || 0
+        },
+        delays: activeRide.delay || 0,
+        actualDeparture: activeRide.startTime,
+        estimatedArrival: activeRide.estimatedArrival || new Date(),
+        lastUpdate: new Date()
+      }] : [];
       
-      setTrackingData(mockData);
+      setTrackingData(liveData);
       setLastUpdate(new Date());
       setLoading(false);
     } catch (error) {
@@ -133,8 +132,8 @@ export default function LiveTracking() {
                       style={{ width: `${data.progress.percentage}%` }}
                     ></div>
                   </div>
-                  <div className="mt-1 text-xs text-gray-500 font-mono">
-                    {createProgressBar(data.progress.current, data.progress.total)}
+                  <div className="mt-1 text-xs text-gray-500">
+                    {data.progress.current} / {data.progress.total} km
                   </div>
                 </div>
                 
