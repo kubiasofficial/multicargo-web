@@ -234,14 +234,61 @@ export const fallbackImages = {
 };
 
 /**
- * Get train image URL based on train number or type
- * @param trainNumber - Full train number (e.g., "EU07-005", "EP08-001")
- * @param trainType - Train type if available
+ * Get train image URL based on vehicles data and train info
+ * @param trainNumber - Train number
+ * @param trainType - Train type (optional)
+ * @param vehicles - Array of vehicle identifiers from SimRail API (optional)
  * @returns Image URL for the train
  */
-export function getTrainImage(trainNumber: string, trainType?: string): string {
-  if (!trainNumber && !trainType) {
+export function getTrainImage(trainNumber: string, trainType?: string, vehicles?: string[]): string {
+  if (!trainNumber && !trainType && !vehicles) {
     return fallbackImages.default;
+  }
+
+  // If we have vehicles data, use it to determine the train image more accurately
+  if (vehicles && vehicles.length > 0) {
+    const firstVehicle = vehicles[0].toLowerCase();
+    
+    // Map specific locomotive types based on SimRail vehicle data
+    if (firstVehicle.includes('ep08')) {
+      return trainImages['EP08'] || fallbackImages.electric;
+    }
+    if (firstVehicle.includes('ep07')) {
+      return trainImages['EP07'] || fallbackImages.electric;
+    }
+    if (firstVehicle.includes('eu07')) {
+      return trainImages['EU07'] || fallbackImages.electric;
+    }
+    if (firstVehicle.includes('et22')) {
+      return trainImages['ET22'] || fallbackImages.diesel;
+    }
+    if (firstVehicle.includes('et25')) {
+      return trainImages['ET25'] || fallbackImages.diesel;
+    }
+    if (firstVehicle.includes('e186') || firstVehicle.includes('traxx')) {
+      return trainImages['EU43'] || fallbackImages.electric;
+    }
+    if (firstVehicle.includes('dragon') || firstVehicle.includes('e6act')) {
+      return trainImages['ET25'] || fallbackImages.electric;
+    }
+    if (firstVehicle.includes('en57')) {
+      return trainImages['EN57'] || fallbackImages.electric;
+    }
+    if (firstVehicle.includes('en71')) {
+      return trainImages['EN71'] || fallbackImages.electric;
+    }
+    if (firstVehicle.includes('en76')) {
+      return trainImages['EN76'] || fallbackImages.electric;
+    }
+    
+    // Try to extract specific locomotive number from vehicles data
+    const vehicleMatch = vehicles[0].match(/([A-Z0-9-]+)/);
+    if (vehicleMatch) {
+      const locomotiveId = vehicleMatch[1];
+      if (trainImages[locomotiveId]) {
+        return trainImages[locomotiveId];
+      }
+    }
   }
 
   // Extract locomotive type from train number

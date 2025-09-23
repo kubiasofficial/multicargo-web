@@ -458,7 +458,7 @@ export default function RidesPage() {
                             {/* Train Image */}
                             <div className="w-16 h-16 bg-gray-700 rounded-lg overflow-hidden border border-gray-600">
                               <img
-                                src={getTrainImage(train.trainNumber, train.type)}
+                                src={getTrainImage(train.trainNumber, train.type, train.vehicles)}
                                 alt={train.trainNumber}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
