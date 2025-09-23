@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { 
   ClockIcon, 
@@ -24,17 +24,17 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
-  const { data: session } = useSession();
+  const { user, loading: authLoading } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activeRides, setActiveRides] = useState<Ride[]>([]);
   const [recentRides, setRecentRides] = useState<Ride[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (session?.user) {
+    if (user) {
       fetchDashboardData();
     }
-  }, [session]);
+  }, [user]);
 
   const fetchDashboardData = async () => {
     try {
@@ -56,7 +56,7 @@ export default function Dashboard() {
           departure: { station: 'Praha hl.n.', time: new Date('2024-12-22T14:30:00') },
           arrival: { station: 'Brno hl.n.', time: new Date('2024-12-22T17:15:00') },
           status: 'IN_PROGRESS',
-          assignedUserId: session?.user?.id || '',
+          assignedUserId: user?.id || '',
           createdBy: 'dispatcher1',
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -72,7 +72,7 @@ export default function Dashboard() {
           departure: { station: 'Brno hl.n.', time: new Date('2024-12-22T12:00:00') },
           arrival: { station: 'Blansko', time: new Date('2024-12-22T12:45:00') },
           status: 'COMPLETED',
-          assignedUserId: session?.user?.id || '',
+          assignedUserId: user?.id || '',
           createdBy: 'dispatcher1',
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -87,7 +87,15 @@ export default function Dashboard() {
     }
   };
 
-  if (!session) {
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -116,10 +124,10 @@ export default function Dashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Vítejte zpět, {session.user.username}!
+            Vítejte zpět, {user.username}!
           </h1>
           <p className="text-gray-600 mt-2">
-            Role: {session.user.roles.map(role => getRoleDisplayName(role)).join(', ')}
+            Role: {user.roles.map((role: any) => getRoleDisplayName(role)).join(', ')}
           </p>
         </div>
 

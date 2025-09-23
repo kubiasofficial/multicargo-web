@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { 
   UsersIcon, 
@@ -22,22 +22,22 @@ interface AdminStats {
 }
 
 export default function AdminPage() {
-  const { data: session } = useSession();
+  const { user, loading: authLoading } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [rides, setRides] = useState<Ride[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (session?.user) {
-      if (!isAdmin(session.user.roles)) {
+    if (user) {
+      if (!isAdmin(user.roles as any)) {
         // Redirect non-admin users
         window.location.href = '/dashboard';
         return;
       }
       fetchAdminData();
     }
-  }, [session]);
+  }, [user]);
 
   const fetchAdminData = async () => {
     try {
@@ -126,7 +126,15 @@ export default function AdminPage() {
     }
   };
 
-  if (!session) {
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -141,7 +149,7 @@ export default function AdminPage() {
     );
   }
 
-  if (!isAdmin(session.user.roles)) {
+  if (!isAdmin(user.roles as any)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
