@@ -35,6 +35,70 @@ export interface UserStats {
 export type UserRole = 'ADMIN' | 'EMPLOYEE' | 'STROJVUDCE' | 'VYPRAVCI';
 
 // Ride Types
+// SimRail API Types
+export interface SimRailTrain {
+  id: string;
+  trainNumber: string;
+  trainName?: string;
+  startStation: string;
+  endStation: string;
+  currentStation?: string;
+  nextStation?: string;
+  serverCode: string;
+  type: string;
+  company?: string;
+  speed?: number;
+  maxSpeed?: number;
+  signal?: string;
+  distance?: number;
+  distanceToSignalInFront?: number;
+  lat?: number;
+  lng?: number;
+  timetable?: SimRailTimetableEntry[];
+}
+
+export interface SimRailTimetableEntry {
+  stationName: string;
+  stationCategory: string;
+  arrivalTime?: string;
+  departureTime?: string;
+  platform?: string;
+  track?: string;
+  maxSpeed?: number;
+  radioChanels?: string[];
+  supervisedBy?: string;
+  mileage?: number;
+  stopType?: 'COMMERCIAL' | 'NON_COMMERCIAL' | 'TECHNICAL';
+}
+
+export interface SimRailStation {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  mainImageUrl?: string;
+}
+
+export interface ActiveRide {
+  id: string;
+  trainId: string;
+  trainNumber: string;
+  route: string;
+  startStation: string;
+  endStation: string;
+  userId: string;
+  userName: string;
+  startTime: Date;
+  currentStation?: string;
+  nextStation?: string;
+  delay: number;
+  progress: number;
+  status: 'ACTIVE' | 'PAUSED' | 'COMPLETED';
+  estimatedArrival?: Date;
+  actualArrival?: Date;
+  isMinimized: boolean;
+}
+
 export interface Ride {
   id: string;
   trainNumber: string;

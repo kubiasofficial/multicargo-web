@@ -10,10 +10,13 @@ import {
   PlusIcon,
   MagnifyingGlassIcon,
   CalendarDaysIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
-import { Ride } from '@/types';
+import { Ride, SimRailTrain } from '@/types';
 import { getRoleDisplayName, isAdmin } from '@/lib/auth';
+import { fetchAvailableTrains, filterTrains, getFormattedRoute } from '@/lib/simrailApi';
+import { getTrainImage, getTrainTypeDescription } from '@/lib/trainImages';
 
 interface RideFilters {
   status: string;
@@ -26,6 +29,11 @@ export default function RidesPage() {
   const { user, loading: authLoading } = useAuth();
   const [rides, setRides] = useState<Ride[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showNewRideModal, setShowNewRideModal] = useState(false);
+  const [availableTrains, setAvailableTrains] = useState<SimRailTrain[]>([]);
+  const [filteredTrains, setFilteredTrains] = useState<SimRailTrain[]>([]);
+  const [trainSearchQuery, setTrainSearchQuery] = useState('');
+  const [loadingTrains, setLoadingTrains] = useState(false);
   const [filters, setFilters] = useState<RideFilters>({
     status: 'all',
     priority: 'all',
@@ -41,60 +49,8 @@ export default function RidesPage() {
 
   const fetchRides = async () => {
     try {
-      // Simulate API call - replace with actual Firebase calls
-      const mockRides: Ride[] = [
-        {
-          id: '1',
-          trainNumber: 'R 672',
-          route: 'Praha hl.n. → Brno hl.n.',
-          departure: { station: 'Praha hl.n.', time: new Date('2024-12-23T14:30:00') },
-          arrival: { station: 'Brno hl.n.', time: new Date('2024-12-23T17:15:00') },
-          status: 'ASSIGNED',
-          assignedUserId: user?.id,
-          createdBy: 'dispatcher1',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          priority: 'HIGH'
-        },
-        {
-          id: '2',
-          trainNumber: 'Os 7331',
-          route: 'Brno hl.n. → Blansko',
-          departure: { station: 'Brno hl.n.', time: new Date('2024-12-23T16:00:00') },
-          arrival: { station: 'Blansko', time: new Date('2024-12-23T16:45:00') },
-          status: 'COMPLETED',
-          assignedUserId: user?.id,
-          createdBy: 'dispatcher1',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          priority: 'NORMAL'
-        },
-        {
-          id: '3',
-          trainNumber: 'Ex 143',
-          route: 'Brno hl.n. → Praha hl.n.',
-          departure: { station: 'Brno hl.n.', time: new Date('2024-12-23T18:30:00') },
-          arrival: { station: 'Praha hl.n.', time: new Date('2024-12-23T21:15:00') },
-          status: 'PENDING',
-          createdBy: 'dispatcher2',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          priority: 'URGENT'
-        },
-        {
-          id: '4',
-          trainNumber: 'Sp 1823',
-          route: 'Ostrava hl.n. → Olomouc hl.n.',
-          departure: { station: 'Ostrava hl.n.', time: new Date('2024-12-23T19:00:00') },
-          arrival: { station: 'Olomouc hl.n.', time: new Date('2024-12-23T20:30:00') },
-          status: 'IN_PROGRESS',
-          assignedUserId: 'other_user',
-          createdBy: 'dispatcher1',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          priority: 'NORMAL'
-        }
-      ];
+      // TODO: Implement Firebase integration based on new data structure
+      const mockRides: Ride[] = [];
 
       // Apply filters
       let filteredRides = mockRides;
@@ -160,13 +116,39 @@ export default function RidesPage() {
     );
   };
 
-  const handleTakeRide = async (rideId: string) => {
-    // TODO: Implement actual API call
-    setRides(rides.map(ride => 
-      ride.id === rideId 
-        ? { ...ride, status: 'ASSIGNED', assignedUserId: user?.id }
-        : ride
-    ));
+  const handleNewRide = async () => {
+    setShowNewRideModal(true);
+    setLoadingTrains(true);
+    
+    try {
+      const trains = await fetchAvailableTrains();
+      setAvailableTrains(trains);
+      setFilteredTrains(trains);
+    } catch (error) {
+      console.error('Error loading trains:', error);
+    } finally {
+      setLoadingTrains(false);
+    }
+  };
+
+  const handleTrainSearch = (query: string) => {
+    setTrainSearchQuery(query);
+    const filtered = filterTrains(availableTrains, query);
+    setFilteredTrains(filtered);
+  };
+
+  const handleTakeRide = async (train: SimRailTrain) => {
+    try {
+      // TODO: Implement actual ride assignment logic
+      console.log('Taking ride for train:', train.trainNumber);
+      setShowNewRideModal(false);
+      
+      // Create new active ride
+      // This will be implemented with Firebase
+      
+    } catch (error) {
+      console.error('Error taking ride:', error);
+    }
   };
 
   if (authLoading) {
@@ -186,6 +168,30 @@ export default function RidesPage() {
           </h2>
           <p className="text-gray-300">
             Přihlaste se pro přístup k jízdám.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if user has STROJVEDOUCÍ role
+  const hasDriverRole = user.roles.some(role => 
+    ['STROJVEDOUCÍ', 'ADMIN'].includes(role)
+  );
+
+  if (!hasDriverRole) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-4">
+            Přístup zamítnut
+          </h2>
+          <p className="text-gray-300 mb-2">
+            Pouze uživatelé s rolí <span className="text-blue-400 font-semibold">STROJVEDOUCÍ</span> mají přístup k této stránce.
+          </p>
+          <p className="text-gray-500 text-sm">
+            Vaše role: {user.roles.map(role => getRoleDisplayName(role as any)).join(', ')}
           </p>
         </div>
       </div>
@@ -216,8 +222,11 @@ export default function RidesPage() {
               </p>
             </div>
             
-            {isAdmin(user.roles as any) && (
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 shadow-lg shadow-indigo-500/20">
+            {(user.roles.some(role => ['STROJVEDOUCÍ', 'ADMIN'].includes(role))) && (
+              <button 
+                onClick={handleNewRide}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 shadow-lg shadow-indigo-500/20"
+              >
                 <PlusIcon className="h-5 w-5" />
                 <span>Nová jízda</span>
               </button>
@@ -318,7 +327,10 @@ export default function RidesPage() {
 
                       {canTakeRide(ride) && (
                         <button
-                          onClick={() => handleTakeRide(ride.id)}
+                          onClick={() => {
+                            // TODO: Convert ride to SimRail train format
+                            console.log('Taking existing ride:', ride.id);
+                          }}
                           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors shadow-lg shadow-green-500/20"
                         >
                           Převzít jízdu
@@ -385,6 +397,125 @@ export default function RidesPage() {
             )}
           </div>
         </div>
+
+        {/* New Ride Modal */}
+        {showNewRideModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-2xl shadow-indigo-500/20 max-w-4xl w-full max-h-[90vh] overflow-hidden">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-700">
+                <h2 className="text-xl font-bold text-white flex items-center">
+                  <TruckIcon className="h-6 w-6 mr-2" />
+                  Vyberte vlak ze SimRail serveru CZ1
+                </h2>
+                <button
+                  onClick={() => setShowNewRideModal(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Search Bar */}
+              <div className="p-6 border-b border-gray-700">
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Hledat podle čísla vlaku nebo trasy..."
+                    className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    value={trainSearchQuery}
+                    onChange={(e) => handleTrainSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Trains List */}
+              <div className="p-6 max-h-96 overflow-y-auto">
+                {loadingTrains ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-400"></div>
+                    <span className="ml-3 text-white">Načítám vlaky ze SimRail...</span>
+                  </div>
+                ) : filteredTrains.length > 0 ? (
+                  <div className="space-y-4">
+                    {filteredTrains.map((train) => (
+                      <div key={train.id} className="border border-gray-600 rounded-lg p-4 bg-gradient-to-r from-gray-800 to-gray-750 shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            {/* Train Image */}
+                            <div className="w-16 h-16 bg-gray-700 rounded-lg overflow-hidden border border-gray-600">
+                              <img
+                                src={getTrainImage(train.trainNumber, train.type)}
+                                alt={train.trainNumber}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'https://wiki.simrail.eu/vehicles_logo.png';
+                                }}
+                              />
+                            </div>
+
+                            {/* Train Info */}
+                            <div>
+                              <h3 className="text-lg font-bold text-white">{train.trainNumber}</h3>
+                              <p className="text-gray-300">{getFormattedRoute(train)}</p>
+                              <p className="text-sm text-gray-400">{getTrainTypeDescription(train.type)}</p>
+                            </div>
+                          </div>
+
+                          {/* Take Ride Button */}
+                          <button
+                            onClick={() => handleTakeRide(train)}
+                            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center space-x-2 shadow-lg shadow-green-500/20"
+                          >
+                            <span>Převzít</span>
+                          </button>
+                        </div>
+
+                        {/* Additional Info */}
+                        <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-400">Výchozí stanice:</span>
+                            <span className="text-white ml-2">{train.startStation}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-400">Cílová stanice:</span>
+                            <span className="text-white ml-2">{train.endStation}</span>
+                          </div>
+                          {train.currentStation && (
+                            <div>
+                              <span className="text-gray-400">Aktuální pozice:</span>
+                              <span className="text-white ml-2">{train.currentStation}</span>
+                            </div>
+                          )}
+                          {train.speed && (
+                            <div>
+                              <span className="text-gray-400">Rychlost:</span>
+                              <span className="text-white ml-2">{train.speed} km/h</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <TruckIcon className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-medium text-gray-400 mb-2">
+                      {trainSearchQuery ? 'Žádné vlaky nenalezeny' : 'Žádné dostupné vlaky'}
+                    </h3>
+                    <p className="text-gray-500">
+                      {trainSearchQuery 
+                        ? 'Zkuste změnit vyhledávací dotaz.'
+                        : 'Aktuálně nejsou na serveru CZ1 dostupné žádné vlaky.'
+                      }
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
