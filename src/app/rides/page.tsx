@@ -18,6 +18,8 @@ import { Ride, SimRailTrain } from '@/types';
 import { getRoleDisplayName, isAdmin } from '@/lib/auth';
 import { fetchAvailableTrains, filterTrains, getFormattedRoute } from '@/lib/simrailApi';
 import { getTrainImage, getTrainTypeDescription } from '@/lib/trainImages';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 
 interface RideFilters {
   status: string;
@@ -50,34 +52,27 @@ export default function RidesPage() {
   }, [user, filters]);
 
   const fetchRides = async () => {
+    setLoading(true);
     try {
-      // TODO: Implement Firebase integration based on new data structure
-      const mockRides: Ride[] = [];
-
-      // Apply filters
-      let filteredRides = mockRides;
-
-      if (filters.status !== 'all') {
-        filteredRides = filteredRides.filter(ride => ride.status === filters.status);
+      if (!db) {
+        throw new Error("Firestore instance 'db' is undefined.");
       }
+      const querySnapshot = await getDocs(collection(db, "rides"));
+      let rides = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Ride[];
 
-      if (filters.priority !== 'all') {
-        filteredRides = filteredRides.filter(ride => ride.priority === filters.priority);
-      }
+      // Filtry
+      if (filters.status !== 'all') rides = rides.filter(ride => ride.status === filters.status);
+      if (filters.priority !== 'all') rides = rides.filter(ride => ride.priority === filters.priority);
+      if (filters.search) rides = rides.filter(ride =>
+        ride.trainNumber.toLowerCase().includes(filters.search.toLowerCase()) ||
+        ride.route.toLowerCase().includes(filters.search.toLowerCase())
+      );
 
-      if (filters.search) {
-        filteredRides = filteredRides.filter(ride => 
-          ride.trainNumber.toLowerCase().includes(filters.search.toLowerCase()) ||
-          ride.route.toLowerCase().includes(filters.search.toLowerCase())
-        );
-      }
-
-      setRides(filteredRides);
-      setLoading(false);
+      setRides(rides);
     } catch (error) {
       console.error('Error fetching rides:', error);
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const getStatusColor = (status: string) => {
@@ -339,9 +334,17 @@ export default function RidesPage() {
 
                       {canTakeRide(ride) && (
                         <button
-                          onClick={() => {
-                            // TODO: Convert ride to SimRail train format
-                            console.log('Taking existing ride:', ride.id);
+                          onClick={async () => {
+                            try {
+                              await updateDoc(doc(db!, "rides", ride.id), {
+                                status: "IN_PROGRESS",
+                                assignedUserId: user.id
+                              });
+                              alert(`Úspěšně jste převzal jízdu vlaku ${ride.trainNumber}!`);
+                              fetchRides(); // znovu načli data
+                            } catch (error) {
+                              alert("Chyba při převzetí jízdy.");
+                            }
                           }}
                           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors shadow-lg shadow-green-500/20"
                         >
