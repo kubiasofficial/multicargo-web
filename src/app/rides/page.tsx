@@ -46,9 +46,7 @@ export default function RidesPage() {
   });
 
   useEffect(() => {
-    if (user) {
-      fetchRides();
-    }
+    fetchRides();
   }, [user, filters]);
 
   const fetchRides = async () => {
@@ -59,20 +57,12 @@ export default function RidesPage() {
       }
       const querySnapshot = await getDocs(collection(db, "rides"));
       let rides = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Ride[];
-
-      // Filtry
-      if (filters.status !== 'all') rides = rides.filter(ride => ride.status === filters.status);
-      if (filters.priority !== 'all') rides = rides.filter(ride => ride.priority === filters.priority);
-      if (filters.search) rides = rides.filter(ride =>
-        ride.trainNumber.toLowerCase().includes(filters.search.toLowerCase()) ||
-        ride.route.toLowerCase().includes(filters.search.toLowerCase())
-      );
-
+      console.log("Načtené jízdy z Firestore:", rides);
       setRides(rides);
     } catch (error) {
       console.error('Error fetching rides:', error);
     }
-    setLoading(false);
+    setLoading(false); // musí být vždy na konci!
   };
 
   const getStatusColor = (status: string) => {
