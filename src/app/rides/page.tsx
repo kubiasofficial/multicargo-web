@@ -229,7 +229,7 @@ export default function RidesPage() {
               </p>
             </div>
             
-            {(user.roles.some(role => ['STROJVEDOUCÍ', 'ADMIN'].includes(role))) && (
+            {(user.roles.some(role => ['STROJVUDCE', 'ADMIN'].includes(role))) && (
               <button 
                 onClick={handleNewRide}
                 disabled={!!activeRide}
