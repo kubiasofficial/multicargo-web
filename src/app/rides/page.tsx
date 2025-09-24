@@ -183,7 +183,7 @@ export default function RidesPage() {
 
   // Check if user has STROJVEDOUCÍ role
   const hasDriverRole = user.roles.some(role => 
-    ['STROJVEDOUCÍ', 'ADMIN'].includes(role)
+    ['STROJVUDCE', 'ADMIN'].includes(role)
   );
 
   if (!hasDriverRole) {
