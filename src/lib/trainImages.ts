@@ -241,28 +241,42 @@ export const fallbackImages = {
  * @returns Image URL for the train
  */
 export function getTrainImage(trainNumber: string, trainType?: string, vehicles?: string[]): string {
+  if (!trainNumber && !trainType && !vehicles) {
+    return fallbackImages.default;
+  }
+
+  // Pokud máme vehicles, hledej nejdřív přesný obrázek
   if (vehicles && vehicles.length > 0) {
-    // Zkus najít obrázek podle přesného názvu vozidla
-    const vehicleId = vehicles[0].toUpperCase();
-    if (trainImages[vehicleId]) {
-      return trainImages[vehicleId];
+    // Hledej přesný identifikátor (např. "EU07-005")
+    for (const v of vehicles) {
+      const id = v.toUpperCase();
+      if (trainImages[id]) {
+        return trainImages[id];
+      }
     }
-    // Zkus najít obrázek podle typu (např. "EU07")
-    const typeMatch = vehicleId.match(/([A-Z]+[0-9]+)/);
-    if (typeMatch && trainImages[typeMatch[1]]) {
-      return trainImages[typeMatch[1]];
-    }
+    // Pokud nenalezeno, použij původní logiku (typ lokomotivy)
+    const firstVehicle = vehicles[0].toLowerCase();
+    if (firstVehicle.includes('ep08')) return trainImages['EP08'] || fallbackImages.electric;
+    if (firstVehicle.includes('ep07')) return trainImages['EP07'] || fallbackImages.electric;
+    if (firstVehicle.includes('eu07')) return trainImages['EU07'] || fallbackImages.electric;
+    if (firstVehicle.includes('et22')) return trainImages['ET22'] || fallbackImages.diesel;
+    if (firstVehicle.includes('et25')) return trainImages['ET25'] || fallbackImages.diesel;
+    if (firstVehicle.includes('e186') || firstVehicle.includes('traxx')) return trainImages['EU43'] || fallbackImages.electric;
+    if (firstVehicle.includes('dragon') || firstVehicle.includes('e6act')) return trainImages['ET25'] || fallbackImages.electric;
+    if (firstVehicle.includes('en57')) return trainImages['EN57'] || fallbackImages.electric;
+    if (firstVehicle.includes('en71')) return trainImages['EN71'] || fallbackImages.electric;
+    if (firstVehicle.includes('en76')) return trainImages['EN76'] || fallbackImages.electric;
   }
-  // Fallback podle trainType
-  if (trainType && trainImages[trainType]) {
-    return trainImages[trainType];
+
+  // Extract locomotive type from train number
+  const extractedType = extractLocomotiveType(trainNumber);
+  if (trainType && trainImages[trainType]) return trainImages[trainType];
+  if (extractedType && trainImages[extractedType]) return trainImages[extractedType];
+  for (const [key, image] of Object.entries(trainImages)) {
+    if (trainNumber.includes(key) || (trainType && trainType.includes(key))) return image;
   }
-  // Fallback podle čísla vlaku
-  if (trainImages[trainNumber]) {
-    return trainImages[trainNumber];
-  }
-  // Fallback obrázek
-  return fallbackImages.electric;
+  if (/^\d+$/.test(trainNumber)) return fallbackImages.electric;
+  return fallbackImages.default;
 }
 
 /**
