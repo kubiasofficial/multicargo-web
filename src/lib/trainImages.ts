@@ -241,41 +241,105 @@ export const fallbackImages = {
  * @returns Image URL for the train
  */
 export function getTrainImage(trainNumber: string, trainType?: string, vehicles?: string[]): string {
+  console.log('getTrainImage called with:', { trainNumber, trainType, vehicles });
+  
   if (!trainNumber && !trainType && !vehicles) {
     return fallbackImages.default;
   }
 
-  // Pokud máme vehicles, hledej nejdřív přesný obrázek
+  // If we have vehicles data, use it to determine the train image more accurately
   if (vehicles && vehicles.length > 0) {
-    // Hledej přesný identifikátor (např. "EU07-005")
-    for (const v of vehicles) {
-      const id = v.toUpperCase();
-      if (trainImages[id]) {
-        return trainImages[id];
+    const firstVehicle = vehicles[0].toLowerCase();
+    console.log('Processing vehicle:', firstVehicle);
+    
+    // Map specific locomotive types based on SimRail vehicle data
+    if (firstVehicle.includes('ep08')) {
+      const result = trainImages['EP08'] || fallbackImages.electric;
+      console.log('EP08 match, returning:', result);
+      return result;
+    }
+    if (firstVehicle.includes('ep07')) {
+      const result = trainImages['EP07'] || fallbackImages.electric;
+      console.log('EP07 match, returning:', result);
+      return result;
+    }
+    if (firstVehicle.includes('eu07')) {
+      const result = trainImages['EU07'] || fallbackImages.electric;
+      console.log('EU07 match, returning:', result);
+      return result;
+    }
+    if (firstVehicle.includes('et22')) {
+      const result = trainImages['ET22'] || fallbackImages.diesel;
+      console.log('ET22 match, returning:', result);
+      return result;
+    }
+    if (firstVehicle.includes('et25')) {
+      const result = trainImages['ET25'] || fallbackImages.diesel;
+      console.log('ET25 match, returning:', result);
+      return result;
+    }
+    if (firstVehicle.includes('e186') || firstVehicle.includes('traxx')) {
+      const result = trainImages['EU43'] || fallbackImages.electric;
+      console.log('Traxx match, returning:', result);
+      return result;
+    }
+    if (firstVehicle.includes('dragon') || firstVehicle.includes('e6act')) {
+      const result = trainImages['ET25'] || fallbackImages.electric;
+      console.log('Dragon match, returning:', result);
+      return result;
+    }
+    if (firstVehicle.includes('en57')) {
+      const result = trainImages['EN57'] || fallbackImages.electric;
+      console.log('EN57 match, returning:', result);
+      return result;
+    }
+    if (firstVehicle.includes('en71')) {
+      const result = trainImages['EN71'] || fallbackImages.electric;
+      console.log('EN71 match, returning:', result);
+      return result;
+    }
+    if (firstVehicle.includes('en76')) {
+      const result = trainImages['EN76'] || fallbackImages.electric;
+      console.log('EN76 match, returning:', result);
+      return result;
+    }
+    
+    // Try to extract specific locomotive number from vehicles data
+    const vehicleMatch = vehicles[0].match(/([A-Z0-9-]+)/);
+    if (vehicleMatch) {
+      const locomotiveId = vehicleMatch[1];
+      console.log('Extracted locomotive ID:', locomotiveId);
+      if (trainImages[locomotiveId]) {
+        console.log('Found specific locomotive image:', trainImages[locomotiveId]);
+        return trainImages[locomotiveId];
       }
     }
-    // Pokud nenalezeno, použij původní logiku (typ lokomotivy)
-    const firstVehicle = vehicles[0].toLowerCase();
-    if (firstVehicle.includes('ep08')) return trainImages['EP08'] || fallbackImages.electric;
-    if (firstVehicle.includes('ep07')) return trainImages['EP07'] || fallbackImages.electric;
-    if (firstVehicle.includes('eu07')) return trainImages['EU07'] || fallbackImages.electric;
-    if (firstVehicle.includes('et22')) return trainImages['ET22'] || fallbackImages.diesel;
-    if (firstVehicle.includes('et25')) return trainImages['ET25'] || fallbackImages.diesel;
-    if (firstVehicle.includes('e186') || firstVehicle.includes('traxx')) return trainImages['EU43'] || fallbackImages.electric;
-    if (firstVehicle.includes('dragon') || firstVehicle.includes('e6act')) return trainImages['ET25'] || fallbackImages.electric;
-    if (firstVehicle.includes('en57')) return trainImages['EN57'] || fallbackImages.electric;
-    if (firstVehicle.includes('en71')) return trainImages['EN71'] || fallbackImages.electric;
-    if (firstVehicle.includes('en76')) return trainImages['EN76'] || fallbackImages.electric;
   }
 
   // Extract locomotive type from train number
   const extractedType = extractLocomotiveType(trainNumber);
-  if (trainType && trainImages[trainType]) return trainImages[trainType];
-  if (extractedType && trainImages[extractedType]) return trainImages[extractedType];
-  for (const [key, image] of Object.entries(trainImages)) {
-    if (trainNumber.includes(key) || (trainType && trainType.includes(key))) return image;
+  
+  // Check direct mapping first
+  if (trainType && trainImages[trainType]) {
+    return trainImages[trainType];
   }
-  if (/^\d+$/.test(trainNumber)) return fallbackImages.electric;
+  
+  if (extractedType && trainImages[extractedType]) {
+    return trainImages[extractedType];
+  }
+  
+  // Check for partial matches
+  for (const [key, image] of Object.entries(trainImages)) {
+    if (trainNumber.includes(key) || (trainType && trainType.includes(key))) {
+      return image;
+    }
+  }
+  
+  // For numerical train numbers (SimRail), return electric locomotive fallback
+  if (/^\d+$/.test(trainNumber)) {
+    return fallbackImages.electric;
+  }
+  
   return fallbackImages.default;
 }
 
