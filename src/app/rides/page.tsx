@@ -56,7 +56,7 @@ export default function RidesPage() {
         throw new Error("Firestore instance 'db' is undefined.");
       }
       const querySnapshot = await getDocs(collection(db, "rides"));
-      let rides = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Ride[];
+      const rides = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Ride[];
       console.log("Načtené jízdy z Firestore:", rides);
       setRides(rides);
     } catch (error) {
