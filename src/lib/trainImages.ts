@@ -562,7 +562,7 @@ export function getTrainTypeDescription(trainNumber: string, trainType?: string,
   return 'Vlak';
 }
 
-export default {
+const trainImagesModule = {
   trainImages,
   trainDetails,
   fallbackImages,
@@ -570,3 +570,5 @@ export default {
   getTrainDetails,
   getTrainTypeDescription
 };
+
+export default trainImagesModule;
