@@ -247,60 +247,59 @@ export function getTrainImage(trainNumber: string, trainType?: string, vehicles?
     return fallbackImages.default;
   }
 
-  // If we have vehicles data, use it to determine the train image more accurately
+  // Pokud máme vehicles, zkusíme najít konkrétní obrázek podle přesného názvu vozidla
   if (vehicles && vehicles.length > 0) {
+    // Hledáme konkrétní vozidlo podle přesného názvu (např. "EU07-005")
+    for (const v of vehicles) {
+      // Extrahujeme identifikátor lokomotivy (např. "EU07-005" z "4E/EU07-005")
+      const parts = v.split('/');
+      const locoId = parts.length > 1 ? parts[1].split(':')[0] : parts[0].split(':')[0];
+      if (trainImages[locoId]) {
+        return trainImages[locoId];
+      }
+    }
+    // Pokud nenalezeno, pokračujeme původní logikou podle typu
     const firstVehicle = vehicles[0].toLowerCase();
-    console.log('Processing vehicle:', firstVehicle);
     
     // Map specific locomotive types based on SimRail vehicle data
     if (firstVehicle.includes('ep08')) {
       const result = trainImages['EP08'] || fallbackImages.electric;
-      console.log('EP08 match, returning:', result);
       return result;
     }
     if (firstVehicle.includes('ep07')) {
       const result = trainImages['EP07'] || fallbackImages.electric;
-      console.log('EP07 match, returning:', result);
       return result;
     }
     if (firstVehicle.includes('eu07')) {
       const result = trainImages['EU07'] || fallbackImages.electric;
-      console.log('EU07 match, returning:', result);
       return result;
     }
     if (firstVehicle.includes('et22')) {
       const result = trainImages['ET22'] || fallbackImages.diesel;
-      console.log('ET22 match, returning:', result);
       return result;
     }
     if (firstVehicle.includes('et25')) {
       const result = trainImages['ET25'] || fallbackImages.diesel;
-      console.log('ET25 match, returning:', result);
       return result;
     }
     if (firstVehicle.includes('e186') || firstVehicle.includes('traxx')) {
       const result = trainImages['EU43'] || fallbackImages.electric;
-      console.log('Traxx match, returning:', result);
       return result;
     }
     if (firstVehicle.includes('dragon') || firstVehicle.includes('e6act')) {
       const result = trainImages['ET25'] || fallbackImages.electric;
-      console.log('Dragon match, returning:', result);
       return result;
     }
     if (firstVehicle.includes('en57')) {
       const result = trainImages['EN57'] || fallbackImages.electric;
-      console.log('EN57 match, returning:', result);
       return result;
     }
     if (firstVehicle.includes('en71')) {
       const result = trainImages['EN71'] || fallbackImages.electric;
-      console.log('EN71 match, returning:', result);
       return result;
     }
     if (firstVehicle.includes('en76')) {
       const result = trainImages['EN76'] || fallbackImages.electric;
-      console.log('EN76 match, returning:', result);
       return result;
     }
     
@@ -308,9 +307,7 @@ export function getTrainImage(trainNumber: string, trainType?: string, vehicles?
     const vehicleMatch = vehicles[0].match(/([A-Z0-9-]+)/);
     if (vehicleMatch) {
       const locomotiveId = vehicleMatch[1];
-      console.log('Extracted locomotive ID:', locomotiveId);
       if (trainImages[locomotiveId]) {
-        console.log('Found specific locomotive image:', trainImages[locomotiveId]);
         return trainImages[locomotiveId];
       }
     }
