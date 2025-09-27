@@ -19,7 +19,7 @@ import { getRoleDisplayName, isAdmin } from '@/lib/auth';
 import { fetchAvailableTrains, filterTrains, getFormattedRoute } from '@/lib/simrailApi';
 import { getTrainImage, getTrainTypeDescription } from '@/lib/trainImages';
 import { db } from '@/lib/firebase';
-import { query, orderBy, limit, getDocs, collection, updateDoc, doc, addDoc } from 'firebase/firestore';
+import { query, orderBy, limit, getDocs, collection, updateDoc, doc, addDoc, Timestamp } from 'firebase/firestore';
 
 interface RideFilters {
   status: string;
@@ -137,16 +137,16 @@ export default function RidesPage() {
       route: getFormattedRoute(train),
       departure: {
         station: train.startStation,
-        time: now
+        time: Timestamp.fromDate(now)
       },
       arrival: {
         station: train.endStation,
-        time: new Date(now.getTime() + 2 * 60 * 60 * 1000) // +2h
+        time: Timestamp.fromDate(new Date(now.getTime() + 2 * 60 * 60 * 1000)) // +2h
       },
       status: "PENDING",
       priority: "NORMAL",
-      createdAt: now,
-      updatedAt: now,
+      createdAt: Timestamp.fromDate(now),
+      updatedAt: Timestamp.fromDate(now),
       createdBy: user.id,
       assignedUserId: ""
     });
