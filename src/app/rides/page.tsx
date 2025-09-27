@@ -19,7 +19,7 @@ import { getRoleDisplayName, isAdmin } from '@/lib/auth';
 import { fetchAvailableTrains, filterTrains, getFormattedRoute } from '@/lib/simrailApi';
 import { getTrainImage, getTrainTypeDescription } from '@/lib/trainImages';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { query, orderBy, limit, getDocs, collection, updateDoc, doc } from 'firebase/firestore';
 
 interface RideFilters {
   status: string;
@@ -55,14 +55,20 @@ export default function RidesPage() {
       if (!db) {
         throw new Error("Firestore instance 'db' is undefined.");
       }
-      const querySnapshot = await getDocs(collection(db, "rides"));
+      // Načti pouze posledních 20 jízd, seřazených podle data vytvoření
+      const ridesQuery = query(
+        collection(db, "rides"),
+        orderBy("createdAt", "desc"),
+        limit(20)
+      );
+      const querySnapshot = await getDocs(ridesQuery);
       const rides = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Ride[];
       console.log("Načtené jízdy z Firestore:", rides);
       setRides(rides);
     } catch (error) {
       console.error('Error fetching rides:', error);
     }
-    setLoading(false); // musí být vždy na konci!
+    setLoading(false);
   };
 
   const getStatusColor = (status: string) => {
