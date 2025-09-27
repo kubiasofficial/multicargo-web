@@ -19,7 +19,7 @@ import { getRoleDisplayName, isAdmin } from '@/lib/auth';
 import { fetchAvailableTrains, filterTrains, getFormattedRoute } from '@/lib/simrailApi';
 import { getTrainImage, getTrainTypeDescription } from '@/lib/trainImages';
 import { db } from '@/lib/firebase';
-import { query, orderBy, limit, getDocs, collection, updateDoc, doc } from 'firebase/firestore';
+import { query, orderBy, limit, getDocs, collection, updateDoc, doc, addDoc } from 'firebase/firestore';
 
 interface RideFilters {
   status: string;
@@ -58,8 +58,7 @@ export default function RidesPage() {
       // Načti pouze posledních 20 jízd, seřazených podle data vytvoření
       const ridesQuery = query(
         collection(db, "rides"),
-        orderBy("createdAt", "desc"),
-        limit(20)
+        orderBy("createdAt", "desc")
       );
       const querySnapshot = await getDocs(ridesQuery);
       const rides = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Ride[];
@@ -130,22 +129,42 @@ export default function RidesPage() {
     setFilteredTrains(filtered);
   };
 
+  const createRide = async (train: SimRailTrain) => {
+    if (!db || !user) return;
+    const now = new Date();
+    await addDoc(collection(db, "rides"), {
+      trainNumber: train.trainNumber,
+      route: getFormattedRoute(train),
+      departure: {
+        station: train.startStation,
+        time: now
+      },
+      arrival: {
+        station: train.endStation,
+        time: new Date(now.getTime() + 2 * 60 * 60 * 1000) // +2h
+      },
+      status: "PENDING",
+      priority: "NORMAL",
+      createdAt: now,
+      updatedAt: now,
+      createdBy: user.id,
+      assignedUserId: ""
+    });
+  };
+
   const handleTakeRide = async (train: SimRailTrain) => {
     try {
       if (activeRide) {
         alert('Již máte aktivní jízdu! Ukončete ji před začátkem nové.');
         return;
       }
-
-      await startRide(train);
+      await createRide(train); // vytvoří novou jízdu v databázi
       setShowNewRideModal(false);
-      
-      // Show success message
-      alert(`Úspěšně jste převzal jízdu vlaku ${train.trainNumber}!`);
-      
+      alert(`Nová jízda vlaku ${train.trainNumber} byla vytvořena!`);
+      fetchRides(); // obnoví seznam jízd
     } catch (error) {
-      console.error('Error taking ride:', error);
-      alert('Chyba při převzetí jízdy. Zkuste to prosím znovu.');
+      console.error('Error creating ride:', error);
+      alert('Chyba při vytváření jízdy. Zkuste to prosím znovu.');
     }
   };
 
